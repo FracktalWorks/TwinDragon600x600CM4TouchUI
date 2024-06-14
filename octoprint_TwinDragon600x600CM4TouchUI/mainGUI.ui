@@ -176,7 +176,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>24</number>
+     <number>13</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -7564,9 +7564,9 @@ QPushButton:focus {
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>90</y>
         <width>781</width>
-        <height>261</height>
+        <height>201</height>
        </rect>
       </property>
       <property name="font">
@@ -7695,7 +7695,7 @@ QPushButton:focus {
         <x>10</x>
         <y>10</y>
         <width>781</width>
-        <height>261</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="font">
@@ -7714,6 +7714,22 @@ QPushButton:focus {
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="CalibrationPoint1">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>100</y>
+        <width>781</width>
+        <height>241</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -7824,7 +7840,7 @@ QPushButton:focus {
         <x>10</x>
         <y>10</y>
         <width>781</width>
-        <height>261</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="font">
@@ -7843,6 +7859,22 @@ QPushButton:focus {
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="CalibrationPoint2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>781</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -7953,7 +7985,7 @@ QPushButton:focus {
         <x>10</x>
         <y>10</y>
         <width>781</width>
-        <height>261</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="font">
@@ -7972,6 +8004,22 @@ QPushButton:focus {
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="CalibrationPoint3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>781</width>
+        <height>251</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -8408,6 +8456,22 @@ QPushButton:focus {
        </size>
       </property>
      </widget>
+     <widget class="QLabel" name="Nozzlelevel1">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>90</y>
+        <width>361</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="idexConfigStep2Page">
      <widget class="QPushButton" name="idexConfigStep2NextButton">
@@ -8558,10 +8622,26 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Tighten the front left screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage</string>
+       <string>Tighten the front right screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="CalibrationPoint1_2">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>70</y>
+        <width>361</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -8664,7 +8744,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Tighten the front left screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage</string>
+       <string>Tighten the front right screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -8718,6 +8798,22 @@ QPushButton:focus {
         <width>40</width>
         <height>40</height>
        </size>
+      </property>
+     </widget>
+     <widget class="QLabel" name="CalibrationPoint2_2">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>80</y>
+        <width>361</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -8876,14 +8972,30 @@ QPushButton:focus {
        </size>
       </property>
      </widget>
+     <widget class="QLabel" name="Nozzlelevel1_2">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>50</y>
+        <width>361</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="idexConfigStep5Page">
      <widget class="QPushButton" name="moveZMIdexButton">
       <property name="geometry">
        <rect>
         <x>400</x>
-        <y>60</y>
-        <width>241</width>
+        <y>10</y>
+        <width>251</width>
         <height>81</height>
        </rect>
       </property>
@@ -8949,33 +9061,6 @@ QPushButton:focus {
       </property>
       <property name="flat">
        <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="toolZOffsetLabel_4">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>791</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Gotham</family>
-        <pointsize>16</pointsize>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Step 1: Move the Bed up untill BOTH nozzes just touch.</string>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
       </property>
      </widget>
      <widget class="QPushButton" name="idexConfigStep5NextButton">
@@ -9081,9 +9166,9 @@ QPushButton:focus {
      <widget class="QPushButton" name="moveZPIdexButton">
       <property name="geometry">
        <rect>
-        <x>160</x>
-        <y>60</y>
-        <width>241</width>
+        <x>140</x>
+        <y>10</y>
+        <width>261</width>
         <height>81</height>
        </rect>
       </property>
@@ -9155,15 +9240,15 @@ QPushButton:focus {
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>140</y>
+        <y>260</y>
         <width>791</width>
-        <height>41</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <family>Gotham</family>
-        <pointsize>16</pointsize>
+        <family>MS Shell Dlg 2</family>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
        </font>
@@ -9172,7 +9257,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Step 2: Move the Bed up untill BOTH nozzes just touch the bed.</string>
+       <string>Step 1: Move the Bed up untill BOTH nozzes just touch the bed.</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -9182,15 +9267,15 @@ QPushButton:focus {
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>190</y>
+        <y>290</y>
         <width>791</width>
-        <height>81</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <family>Gotham</family>
-        <pointsize>16</pointsize>
+        <family>MS Shell Dlg 2</family>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
        </font>
@@ -9199,7 +9284,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Step 3: Physically slide the tools up and down in the carriage such that their nozzles lightly touch the bed. </string>
+       <string>Step 2: Physically slide the tools up and down in the carriage such that their nozzles lightly touch the bed. </string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -9209,15 +9294,15 @@ QPushButton:focus {
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>270</y>
+        <y>320</y>
         <width>791</width>
-        <height>81</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <family>Gotham</family>
-        <pointsize>16</pointsize>
+        <family>MS Shell Dlg 2</family>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
        </font>
@@ -9226,10 +9311,26 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Step 4: Lock the position of the tools by tightening the fastener on their right.</string>
+       <string>Step 3: Lock the position of the tools by tightening the fastener on their right.</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Nozzlelevel2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>100</y>
+        <width>761</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>
@@ -11488,7 +11589,7 @@ QTabBar:focus {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <property name="iconSize">
        <size>

@@ -344,6 +344,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.setHomeOffsetBool = False
             self.currentImage = None
             self.currentFile = None
+            self.tpuflag = False
             # if not Development:
             #     self.sanityCheck = ThreadSanityCheck(self._logger, virtual=not self.__timelapse_enabled)
             # else:
@@ -820,10 +821,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/" + icon)))
         #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=SFS_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
         #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=SFS_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+        octopiclient.gcode(command="PRIMARY_SFS_ENABLE{}".format(int(self.toggleFilamentSensorButton.isChecked())))
     def filamentSensorHandler(self, data):
         try:
             # sensor_enabled = False
@@ -851,6 +853,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
             if '1' in data:
                 triggered_extruder1 = True
+
+            if 'disabled' in data:
+                self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/filamentSensorOff")))
+
+            if 'enabled' in data:
+                self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/filamentSensorOn")))
 
             # if 'door' in data:
             #     triggered_door = data["door"] == 0
@@ -913,6 +921,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         :return:
         '''
         octopiclient.gcode(command='DoorToggle')
+        octopiclient.overrideDoorLock()
 
     def doorLockMsg(self, data):
         if "msg" not in data:
@@ -1428,6 +1437,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.setToolTemperature({"tool1": filaments[str(
                 self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
                 {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
+        if self.changeFilamentComboBox.currentText() == "TPU":
+            self.tpuflag = True
+        else:
+            self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Unloading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1448,6 +1461,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.setToolTemperature({"tool1": filaments[str(
                 self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
                 {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
+        if self.changeFilamentComboBox.currentText() == "TPU":
+            self.tpuflag = True
+        else:
+            self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Loading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1483,10 +1500,16 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 break
 
         while self.stackedWidget.currentWidget() == self.changeFilamentExtrudePage:
-            octopiclient.gcode("G91")
-            octopiclient.gcode("G1 E20 F600")
-            octopiclient.gcode("G90")
-            time.sleep(self.calcExtrudeTime(20, 600))
+            if self.tpuflag:
+                octopiclient.gcode("G91")
+                octopiclient.gcode("G1 E20 F300")
+                octopiclient.gcode("G90")
+                time.sleep(self.calcExtrudeTime(20, 300))
+            else:
+                octopiclient.gcode("G91")
+                octopiclient.gcode("G1 E20 F600")
+                octopiclient.gcode("G90")
+                time.sleep(self.calcExtrudeTime(20, 600))
     @run_async
     def changeFilamentRetractFunction(self):
         '''
@@ -1494,9 +1517,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
         # Tip Shaping to prevent filament jamming in nozzle
-        octopiclient.gcode("G91")
-        octopiclient.gcode("G1 E10 F600")
-        time.sleep(self.calcExtrudeTime(10, 600))
+        if self.tpuflag:
+            octopiclient.gcode("G91")
+            octopiclient.gcode("G1 E10 F300")
+            time.sleep(self.calcExtrudeTime(10, 300))
+        else:
+            octopiclient.gcode("G91")
+            octopiclient.gcode("G1 E10 F600")
+            time.sleep(self.calcExtrudeTime(10, 600))
         octopiclient.gcode("G1 E-20 F2400")
         time.sleep(self.calcExtrudeTime(20, 2400))
         time.sleep(10) #wait for filament to cool inside the nozzle
@@ -1536,7 +1564,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def changeFilamentCancel(self):
         self.changeFilamentHeatingFlag = False
         self.firmwareUpdateCheck()
-        self.coolDownAction()
+        if self.printerStatusText not in ["Printing","Paused"]:
+            self.coolDownAction()
         self.control()
 
     ''' +++++++++++++++++++++++++++++++++Job Operations+++++++++++++++++++++++++++++++ '''
@@ -1933,11 +1962,15 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.setActiveExtruder(1)
             octopiclient.selectTool(1)
             time.sleep(1)
+            if self.printerStatusText == "Paused":
+                octopiclient.jog(x=648, y=-108, absolute=True, speed=2000)
 
         else:
             self.setActiveExtruder(0)
             octopiclient.selectTool(0)
             time.sleep(1)
+            if self.printerStatusText == "Paused":
+                octopiclient.jog(x=-27, y=-108, absolute=True, speed=2000)
 
 
     def selectToolMotion(self):
@@ -1991,6 +2024,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++Control Screen+++++++++++++++++++++++++++++++ '''
 
     def control(self):
+        self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.controlPage)
         if self.toolToggleTemperatureButton.isChecked():
             self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
@@ -2189,6 +2223,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         self.stackedWidget.setCurrentWidget(self.quickStep2Page)
         octopiclient.jog(x=calibrationPosition['X1'], y=calibrationPosition['Y1'], absolute=True, speed=10000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
+        self.movie1 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint1.gif")
+        self.CalibrationPoint1.setMovie(self.movie1)
+        self.movie1.start()
 
     def quickStep3(self):
         '''
@@ -2198,6 +2235,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.jog(z=10, absolute=True, speed=1500)
         octopiclient.jog(x=calibrationPosition['X2'], y=calibrationPosition['Y2'], absolute=True, speed=10000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
+        self.movie1.stop()
+        self.movie2 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint2.gif")
+        self.CalibrationPoint2.setMovie(self.movie2)
+        self.movie2.start()
 
     def quickStep4(self):
         '''
@@ -2209,6 +2250,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.jog(z=10, absolute=True, speed=1500)
         octopiclient.jog(x=calibrationPosition['X3'], y=calibrationPosition['Y3'], absolute=True, speed=10000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
+        self.movie2.stop()
+        self.movie3 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint3.gif")
+        self.CalibrationPoint3.setMovie(self.movie3)
+        self.movie3.start()
 
     # def quickStep5(self):
     #     '''
@@ -2219,6 +2264,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     #     octopiclient.gcode(command='M272 S')
 
     def nozzleHeightStep1(self):
+        self.movie3.stop()
         if self.toolZOffsetCaliberationPageCount == 0 :
             self.toolZOffsetLabel.setText("Move the bed up or down to the First Nozzle , testing height using paper")
             self.stackedWidget.setCurrentWidget(self.nozzleHeightStep1Page)
@@ -2259,6 +2305,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.gcode(command='M104 S0')
         octopiclient.gcode(command='M104 T1 S0')
         octopiclient.gcode(command='M84')
+        try:
+            self.movie1.stop()
+            self.movie2.stop()
+            self.movie3.stop()
+        except:
+            pass
 
     
     def testPrint(self,tool0Diameter,tool1Diameter,gcode):
@@ -2320,6 +2372,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.gcode(command='T0')  # Set active tool to t0
         octopiclient.gcode(command='M420 S0')  # Dissable mesh bed leveling for good measure
         self.stackedWidget.setCurrentWidget(self.idexConfigStep1Page)
+        self.movie5 = QtGui.QMovie("templates/img/Calibration/Nozzlelevel1.gif")
+        self.Nozzlelevel1.setMovie(self.movie5)
+        self.movie5.start()
     def idexConfigStep2(self):
         '''
         levels first position (RIGHT)
@@ -2328,6 +2383,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         self.stackedWidget.setCurrentWidget(self.idexConfigStep2Page)
         octopiclient.jog(x=calibrationPosition['X1'], y=calibrationPosition['Y1'], absolute=True, speed=10000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
+        self.movie5.stop()
+        self.movie6 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint1.gif")
+        self.CalibrationPoint1_2.setMovie(self.movie6)
+        self.movie6.start()
+
 
     def idexConfigStep3(self):
         '''
@@ -2337,6 +2397,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.jog(z=10, absolute=True, speed=1500)
         octopiclient.jog(x=calibrationPosition['X2'], y=calibrationPosition['Y2'], absolute=True, speed=10000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
+        self.movie6.stop()
+        self.movie7 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint2.gif")
+        self.CalibrationPoint2_2.setMovie(self.movie7)
+        self.movie7.start()
 
     def idexConfigStep4(self):
         '''
@@ -2348,6 +2412,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.jog(z=10, absolute=True, speed=1500)
         octopiclient.gcode(command='M605 S3')
         octopiclient.jog(x=calibrationPosition['X1'], y=calibrationPosition['Y1'], absolute=True, speed=10000)
+        self.movie7.stop()
+        self.movie8 = QtGui.QMovie("templates/img/Calibration/NozzleLevelNew1.gif")
+        self.Nozzlelevel1_2.setMovie(self.movie8)
+        self.movie8.start()
+
 
     def idexConfigStep5(self):
         '''
@@ -2357,6 +2426,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         # sent twice for some reason
         self.stackedWidget.setCurrentWidget(self.idexConfigStep5Page)
         octopiclient.jog(z=1, absolute=True, speed=10000)
+        self.movie8.stop()
+        self.movie9 = QtGui.QMovie("templates/img/Calibration/NozzlelevelNew2.gif")
+        self.Nozzlelevel2.setMovie(self.movie9)
+        self.movie9.start()
+
 
 
     def idexDoneStep(self):
@@ -2366,6 +2440,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         octopiclient.jog(z=4, absolute=True, speed=1500)
         self.stackedWidget.setCurrentWidget(self.calibratePage)
+        self.movie9.stop()
         octopiclient.home(['z'])
         octopiclient.home(['x', 'y'])
         octopiclient.gcode(command='M104 S0')
@@ -2377,6 +2452,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def idexCancelStep(self):
         self.stackedWidget.setCurrentWidget(self.calibratePage)
+        try:
+            self.movie5.stop()
+            self.movie6.stop()
+            self.movie7.stop()
+            self.movie8.stop()
+            self.movie9.stop()
+        except:
+            pass
         octopiclient.gcode(command='M605 S1')
         octopiclient.home(['z'])
         octopiclient.home(['x', 'y'])
@@ -2617,6 +2700,10 @@ class QtWebsocket(QtCore.QThread):
                 for item in data["current"]["messages"]:
                     if 'Filament Runout or clogged' in item: # "Filament Runout on T0/T1"
                         self.filament_sensor_triggered_signal.emit(item[item.index('T') + 1:].split(' ', 1)[0])
+
+                    if 'Primary FS Status' in item:
+                        self.filament_sensor_triggered_signal.emit(item)
+
                     if 'M206' in item: #response to M503, send current Z offset value
                         self.z_home_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
                     # if 'Count' in item:  # gets the current Z value, uses it to set Z offset
