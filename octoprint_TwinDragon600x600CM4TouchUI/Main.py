@@ -349,8 +349,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             # else:
             self.sanityCheck = ThreadSanityCheck(virtual=False)
             self.sanityCheck.start()
+
             self.sanityCheck.loaded_signal.connect(self.proceed)
             self.sanityCheck.startup_error_signal.connect(self.handleStartupError)
+            
             self.setNewToolZOffsetFromCurrentZBool = False
             self.setActiveExtruder(0)
 
@@ -824,6 +826,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
         octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
         octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
+    
     def filamentSensorHandler(self, data):
         try:
             # sensor_enabled = False

@@ -1,0 +1,404 @@
+from MainUIClass.socket_qt import QtWebsocket
+from MainUIClass.MainUIClasses.dialog_methods import tellAndReboot, askAndReboot
+import mainGUI
+import dialog 
+from PyQt5 import QtGui, QtCore
+from MainUIClass.config import _fromUtf8, ip, apiKey
+import styles
+import requests
+from logger import *
+
+printerStatusText = None
+
+class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
+    def __init__(self):
+        log_info("Starting socket connections init.")
+        self.octopiclient = None
+        super().__init__()
+    
+    def setup(self):
+
+        log_debug("Octopiclient inside class socketConnections: " + str(self.octopiclient))
+        try:
+            #--Dual Caliberation Addition--
+            self.QtSocket.set_z_tool_offset_signal.connect(self.setZToolOffset)
+            self.QtSocket.z_probe_offset_signal.connect(self.updateEEPROMProbeOffset)
+            self.QtSocket.temperatures_signal.connect(self.updateTemperature)
+            self.QtSocket.status_signal.connect(self.updateStatus)
+            self.QtSocket.print_status_signal.connect(self.updatePrintStatus)
+            self.QtSocket.update_started_signal.connect(self.softwareUpdateProgress)
+            self.QtSocket.update_log_signal.connect(self.softwareUpdateProgressLog)
+            self.QtSocket.update_log_result_signal.connect(self.softwareUpdateResult)
+            self.QtSocket.update_failed_signal.connect(self.updateFailed)
+            self.QtSocket.connected_signal.connect(self.onServerConnected)
+            self.QtSocket.filament_sensor_triggered_signal.connect(self.filamentSensorHandler)
+            self.QtSocket.firmware_updater_signal.connect(self.firmwareUpdateHandler)
+            #self.QtSocket.z_home_offset_signal.connect(self.getZHomeOffset)  Deprecated, uses probe offset to set initial height instead
+            self.QtSocket.active_extruder_signal.connect(self.setActiveExtruder)
+            self.QtSocket.z_probing_failed_signal.connect(self.showProbingFailed)
+            self.QtSocket.tool_offset_signal.connect(self.getToolOffset)
+            self.QtSocket.printer_error_signal.connect(self.showPrinterError)
+
+        except Exception as e:
+            error_message = f"Error in setup function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+
+    def updateEEPROMProbeOffset(self, offset):
+        '''
+        Sets the spinbox value to have the value of the Z offset from the printer.
+        the value is -ve so as to be more intuitive.
+        :param offset:
+        :return:
+        '''
+        try:
+            self.nozzleOffsetDoubleSpinBox.setValue(float(offset))
+        except Exception as e:
+            error_message = f"Error in updateEEPROMProbeOffset function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def showProbingFailed(self):
+        try:
+            tellAndReboot(self, "Bed position is not calibrated. Please run calibration wizard after restart.")
+        except Exception as e:
+            error_message = f"Error in showProbingFailed function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def getZHomeOffset(self, offset):
+        '''
+        Sets the spinbox value to have the value of the Z offset from the printer.
+        the value is -ve so as to be more intuitive.
+        :param offset:
+        :return:
+        '''
+        try:
+            self.nozzleOffsetDoubleSpinBox.setValue(-float(offset))
+            self.nozzleHomeOffset = offset
+        except Exception as e:
+            error_message = f"Error in getZHomeOffset function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def firmwareUpdateHandler(self, data):
+        try:
+            if "type" not in data or data["type"] != "status":
+                return
+
+            if "status" not in data:
+                return
+
+            status = data["status"]
+            subtype = data.get("subtype")
+
+            if status == "update_check":  # update check
+                if subtype == "error":  # notify error in ok dialog
+                    self.isFirmwareUpdateInProgress = False
+                    if "message" in data:
+                        dialog.WarningOk(self, "Firmware Updater Error: " + str(data["message"]), overlay=True)
+                elif subtype == "success":
+                    if dialog.SuccessYesNo(self, "Firmware update found.\nPress yes to update now!", overlay=True):
+                        self.isFirmwareUpdateInProgress = True
+                        self.firmwareUpdateStart()
+            elif status == "update_start":  # update started
+                if subtype == "success":  # update progress
+                    self.isFirmwareUpdateInProgress = True
+                    self.firmwareUpdateStartProgress()
+                    if "message" in data:
+                        message = "<span style='color: yellow'>{}</span>".format(data["message"])
+                        self.firmwareUpdateProgress(message)
+                else:  # show error
+                    self.isFirmwareUpdateInProgress = False
+                    if "message" in data:
+                        dialog.WarningOk(self, "Firmware Updater Error: " + str(data["message"]), overlay=True)
+            elif status == "flasherror" or status == "progress":  # show software update dialog and update textview
+                if "message" in data:
+                    message = "<span style='color: {}'>{}</span>".format("teal" if status == "progress" else "red", data["message"])
+                    self.firmwareUpdateProgress(message, backEnabled=(status == "flasherror"))
+            elif status == "success":  # show ok dialog to show done
+                self.isFirmwareUpdateInProgress = False
+                message = data.get("message", "Flash successful!")
+                message = "<span style='color: green'>{}</span>".format(message)
+                message = message + "<br/><br/><span style='color: white'>Press back to continue...</span>"
+                self.firmwareUpdateProgress(message, backEnabled=True)
+        except Exception as e:
+            error_message = f"Error in firmwareUpdateHandler function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def firmwareUpdateStart(self):
+        try:
+            headers = {'X-Api-Key': apiKey}
+            requests.get(f'http://{ip}/plugin/JuliaFirmwareUpdater/update/start', headers=headers)
+        except Exception as e:
+            error_message = f"Error in firmwareUpdateStart function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def firmwareUpdateStartProgress(self):
+        try:
+            self.stackedWidget.setCurrentWidget(self.firmwareUpdateProgressPage)
+            self.firmwareUpdateLog.setText("<span style='color: cyan'>Julia Firmware Updater<span>")
+            self.firmwareUpdateLog.append("<span style='color: cyan'>---------------------------------------------------------------</span>")
+            self.firmwareUpdateBackButton.setEnabled(False)
+        except Exception as e:
+            error_message = f"Error in firmwareUpdateStartProgress function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def firmwareUpdateProgress(self, text, backEnabled=False):
+        try:
+            self.stackedWidget.setCurrentWidget(self.firmwareUpdateProgressPage)
+            self.firmwareUpdateLog.append(str(text))
+            self.firmwareUpdateBackButton.setEnabled(backEnabled)
+        except Exception as e:
+            error_message = f"Error in firmwareUpdateProgress function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def filamentSensorHandler(self, data):
+        try:
+            sensor_enabled = False
+
+            if 'sensor_enabled' in data:
+                sensor_enabled = data["sensor_enabled"] == 1
+
+            icon = 'filamentSensorOn' if sensor_enabled else 'filamentSensorOff'
+            self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/" + icon)))
+
+            if not sensor_enabled:
+                return
+
+            triggered_extruder0 = False
+            triggered_door = False
+            pause_print = False
+
+            if 'filament' in data:
+                triggered_extruder0 = data["filament"] == 0
+            elif 'extruder0' in data:
+                triggered_extruder0 = data["extruder0"] == 0
+
+            if 'door' in data:
+                triggered_door = data["door"] == 0
+            if 'pause_print' in data:
+                pause_print = data["pause_print"]
+
+            if triggered_extruder0 and self.stackedWidget.currentWidget() not in [
+                self.changeFilamentPage, self.changeFilamentProgressPage,
+                self.changeFilamentExtrudePage, self.changeFilamentRetractPage]:
+                if dialog.WarningOk(self, "Filament outage in Extruder 0"):
+                    pass
+
+            if triggered_door:
+                if self.printerStatusText == "Printing":
+                    no_pause_pages = [self.controlPage, self.changeFilamentPage, 
+                                      self.changeFilamentProgressPage, self.changeFilamentExtrudePage, 
+                                      self.changeFilamentRetractPage]
+                    if not pause_print or self.stackedWidget.currentWidget() in no_pause_pages:
+                        if dialog.WarningOk(self, "Door opened"):
+                            return
+                    self.octopiclient.pausePrint()
+                    if dialog.WarningOk(self, "Door opened. Print paused.", overlay=True):
+                        return
+                else:
+                    if dialog.WarningOk(self, "Door opened"):
+                        return
+
+        except Exception as e:
+            error_message = f"Error in filamentSensorHandler function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+    def updateTemperature(self, temperature):
+        '''
+        Slot that gets a signal originating from the thread that keeps polling for printer status
+        runs at 1HZ, so do things that need to be constantly updated only. This also controls the cooling fan depending on the temperatures
+        :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
+        '''
+        try:
+            if temperature['tool0Target'] == 0:
+                self.tool0TempBar.setMaximum(300)
+                self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
+            elif temperature['tool0Actual'] <= temperature['tool0Target']:
+                self.tool0TempBar.setMaximum(temperature['tool0Target'])
+                self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
+            else:
+                self.tool0TempBar.setMaximum(temperature['tool0Actual'])
+            self.tool0TempBar.setValue(temperature['tool0Actual'])
+            self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))  # + unichr(176)
+            self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
+
+            if temperature['tool1Target'] == 0:
+                self.tool1TempBar.setMaximum(300)
+                self.tool1TempBar.setStyleSheet(styles.bar_heater_cold)
+            elif temperature['tool1Actual'] <= temperature['tool1Target']:
+                self.tool1TempBar.setMaximum(temperature['tool1Target'])
+                self.tool1TempBar.setStyleSheet(styles.bar_heater_heating)
+            else:
+                self.tool1TempBar.setMaximum(temperature['tool1Actual'])
+            self.tool1TempBar.setValue(temperature['tool1Actual'])
+            self.tool1ActualTemperature.setText(str(int(temperature['tool1Actual'])))  # + unichr(176)
+            self.tool1TargetTemperature.setText(str(int(temperature['tool1Target'])))
+
+            if temperature['bedTarget'] == 0:
+                self.bedTempBar.setMaximum(150)
+                self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
+            elif temperature['bedActual'] <= temperature['bedTarget']:
+                self.bedTempBar.setMaximum(temperature['bedTarget'])
+                self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
+            else:
+                self.bedTempBar.setMaximum(temperature['bedActual'])
+            self.bedTempBar.setValue(temperature['bedActual'])
+            self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))  # + unichr(176))
+            self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))  # + unichr(176))
+
+        except:
+            pass
+
+        # updates the progress bar on the change filament screen
+        if self.changeFilamentHeatingFlag:
+            if self.activeExtruder == 0:
+                if temperature['tool0Target'] == 0:
+                    self.changeFilamentProgress.setMaximum(300)
+                elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
+                    self.changeFilamentProgress.setMaximum(temperature['tool0Target'])
+                else:
+                    self.changeFilamentProgress.setMaximum(temperature['tool0Actual'])
+                    self.changeFilamentHeatingFlag = False
+                    if self.loadFlag:
+                        self.changeFilamentLoadFunction()
+                        #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
+                    else:
+                        #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
+                        self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
+                        self.changeFilamentRetractFunction()
+
+                self.changeFilamentProgress.setValue(temperature['tool0Actual'])
+            elif self.activeExtruder == 1:
+                if temperature['tool1Target'] == 0:
+                    self.changeFilamentProgress.setMaximum(300)
+                elif temperature['tool1Target'] - temperature['tool1Actual'] > 1:
+                    self.changeFilamentProgress.setMaximum(temperature['tool1Target'])
+                else:
+                    self.changeFilamentProgress.setMaximum(temperature['tool1Actual'])
+                    self.changeFilamentHeatingFlag = False
+                    if self.loadFlag:
+                        self.changeFilamentLoadFunction()
+                        #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
+                    else:
+                        #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
+                        self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
+                        self.changeFilamentRetractFunction()
+
+                self.changeFilamentProgress.setValue(temperature['tool1Actual'])
+
+    def updatePrintStatus(self, file):
+        '''
+        displays infromation of a particular file on the home page,is a slot for the signal emited from the thread that keeps pooling for printer status
+        runs at 1HZ, so do things that need to be constantly updated only
+        :param file: dict of all the attributes of a particualr file
+        '''
+        if file is None:
+            self.currentFile = None
+            self.currentImage = None
+            self.timeLeft.setText("-")
+            self.fileName.setText("-")
+            self.printProgressBar.setValue(0)
+            self.printTime.setText("-")
+            self.playPauseButton.setDisabled(True)  # if file available, make play buttom visible
+
+        else:
+            self.playPauseButton.setDisabled(False)  # if file available, make play buttom visible
+            self.fileName.setText(file['job']['file']['name'])
+            self.currentFile = file['job']['file']['name']
+            if file['progress']['printTime'] is None:
+                self.printTime.setText("-")
+            else:
+                m, s = divmod(file['progress']['printTime'], 60)
+                h, m = divmod(m, 60)
+                d, h = divmod(h, 24)
+                self.printTime.setText("%d:%d:%02d:%02d" % (d, h, m, s))
+
+            if file['progress']['printTimeLeft'] is None:
+                self.timeLeft.setText("-")
+            else:
+                m, s = divmod(file['progress']['printTimeLeft'], 60)
+                h, m = divmod(m, 60)
+                d, h = divmod(h, 24)
+                self.timeLeft.setText("%d:%d:%02d:%02d" % (d, h, m, s))
+
+            if file['progress']['completion'] is None:
+                self.printProgressBar.setValue(0)
+            else:
+                self.printProgressBar.setValue(file['progress']['completion'])
+
+            '''
+            If image is available from server, set it, otherwise display default image.
+            If the image was already loaded, dont load it again.
+            '''
+            if self.currentImage != self.currentFile:
+                self.currentImage = self.currentFile
+                self.displayThumbnail(self.printPreviewMain, self.currentFile, usb=False)
+
+    def updateStatus(self, status):
+        '''
+        Updates the status bar, is a slot for the signal emited from the thread that constantly polls for printer status
+        this function updates the status bar, as well as enables/disables relavent buttons
+        :param status: String of the status text
+        '''
+
+        self.printerStatusText = status
+        self.printerStatus.setText(status)
+
+        if status == "Printing":  # Green
+            self.printerStatusColour.setStyleSheet(styles.printer_status_green)
+        elif status == "Offline":  # Red
+            self.printerStatusColour.setStyleSheet(styles.printer_status_red)
+        elif status == "Paused":  # Amber
+            self.printerStatusColour.setStyleSheet(styles.printer_status_amber)
+        elif status == "Operational":  # Amber
+            self.printerStatusColour.setStyleSheet(styles.printer_status_blue)
+
+        '''
+        Depending on Status, enable and Disable Buttons
+        '''
+        if status == "Printing":
+            self.playPauseButton.setChecked(True)
+            self.stopButton.setDisabled(False)
+            self.motionTab.setDisabled(True)
+            self.changeFilamentButton.setDisabled(True)
+            self.menuCalibrateButton.setDisabled(True)
+            self.menuPrintButton.setDisabled(True)
+            self.doorLockButton.setDisabled(False)
+            # if not self.__timelapse_enabled:
+            #     octopiclient.cancelPrint()
+            #     self.coolDownAction()
+
+        elif status == "Paused":
+            self.playPauseButton.setChecked(False)
+            self.stopButton.setDisabled(False)
+            self.motionTab.setDisabled(False)
+            self.changeFilamentButton.setDisabled(False)
+            self.menuCalibrateButton.setDisabled(True)
+            self.menuPrintButton.setDisabled(True)
+            self.doorLockButton.setDisabled(False)
+
+
+        else:
+            self.stopButton.setDisabled(True)
+            self.playPauseButton.setChecked(False)
+            self.motionTab.setDisabled(False)
+            self.changeFilamentButton.setDisabled(False)
+            self.menuCalibrateButton.setDisabled(False)
+            self.menuPrintButton.setDisabled(False)
+            self.doorLockButton.setDisabled(True)
