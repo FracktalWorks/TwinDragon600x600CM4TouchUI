@@ -35,7 +35,7 @@ class printerName(mainGUI.Ui_MainWindow):
         try:
             log_info("Setting up printer name.")
             self.printerName = self.getPrinterName()
-            self.enterPrinterName.clicked.connect(self.enterPrinterName_function)
+            self.enterPrinterNameButton.clicked.connect(self.enterPrinterName_function)
             self.setPrinterNameComboBox()
             log_info("Printer name setup completed.")
         except Exception as e:
@@ -48,7 +48,7 @@ class printerName(mainGUI.Ui_MainWindow):
         try:
             log_info("Entering printer name function.")
             temp_printerName = self.getPrinterName()
-            new_printerName = self.printerNameComboBox.currentText()
+            new_printerName = self.enterPrinterNameComboBox.currentText()
             if temp_printerName != new_printerName:
                 self.setPrinterName(new_printerName)
                 if Development:
@@ -114,9 +114,9 @@ class printerName(mainGUI.Ui_MainWindow):
         try:
             log_info("Setting printer name combo box.")
             current_printer_name = self.getPrinterName()
-            index = self.printerNameComboBox.findText(current_printer_name, QtCore.Qt.MatchFixedString)
+            index = self.enterPrinterNameComboBox.findText(current_printer_name, QtCore.Qt.MatchFixedString)
             if index != -1:  # Check if a valid index was found
-                self.printerNameComboBox.setCurrentIndex(index)
+                self.enterPrinterNameComboBox.setCurrentIndex(index)
             log_info("Printer name combo box set successfully.")
         except Exception as e:
             error_message = "Error setting printer name combo box: " + str(e)
