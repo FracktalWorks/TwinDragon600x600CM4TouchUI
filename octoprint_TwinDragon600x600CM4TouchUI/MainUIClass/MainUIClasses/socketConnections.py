@@ -18,7 +18,7 @@ class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
     
     def setup(self):
 
-        log_debug("Octopiclient inside class socketConnections: " + str(self.octopiclient))
+        log_debug("Octopiclient inside class socketConnections setup method: " + str(self.octopiclient))
         try:
             #--Dual Caliberation Addition--
             self.QtSocket.set_z_tool_offset_signal.connect(self.setZToolOffset)
@@ -226,81 +226,87 @@ class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
         '''
         try:
-            if temperature['tool0Target'] == 0:
-                self.tool0TempBar.setMaximum(300)
-                self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
-            elif temperature['tool0Actual'] <= temperature['tool0Target']:
-                self.tool0TempBar.setMaximum(temperature['tool0Target'])
-                self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
-            else:
-                self.tool0TempBar.setMaximum(temperature['tool0Actual'])
-            self.tool0TempBar.setValue(temperature['tool0Actual'])
-            self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))  # + unichr(176)
-            self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
-
-            if temperature['tool1Target'] == 0:
-                self.tool1TempBar.setMaximum(300)
-                self.tool1TempBar.setStyleSheet(styles.bar_heater_cold)
-            elif temperature['tool1Actual'] <= temperature['tool1Target']:
-                self.tool1TempBar.setMaximum(temperature['tool1Target'])
-                self.tool1TempBar.setStyleSheet(styles.bar_heater_heating)
-            else:
-                self.tool1TempBar.setMaximum(temperature['tool1Actual'])
-            self.tool1TempBar.setValue(temperature['tool1Actual'])
-            self.tool1ActualTemperature.setText(str(int(temperature['tool1Actual'])))  # + unichr(176)
-            self.tool1TargetTemperature.setText(str(int(temperature['tool1Target'])))
-
-            if temperature['bedTarget'] == 0:
-                self.bedTempBar.setMaximum(150)
-                self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
-            elif temperature['bedActual'] <= temperature['bedTarget']:
-                self.bedTempBar.setMaximum(temperature['bedTarget'])
-                self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
-            else:
-                self.bedTempBar.setMaximum(temperature['bedActual'])
-            self.bedTempBar.setValue(temperature['bedActual'])
-            self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))  # + unichr(176))
-            self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))  # + unichr(176))
-
-        except:
-            pass
-
-        # updates the progress bar on the change filament screen
-        if self.changeFilamentHeatingFlag:
-            if self.activeExtruder == 0:
+            try:
                 if temperature['tool0Target'] == 0:
-                    self.changeFilamentProgress.setMaximum(300)
-                elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
-                    self.changeFilamentProgress.setMaximum(temperature['tool0Target'])
+                    self.tool0TempBar.setMaximum(300)
+                    self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
+                elif temperature['tool0Actual'] <= temperature['tool0Target']:
+                    self.tool0TempBar.setMaximum(int(temperature['tool0Target']))
+                    self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
                 else:
-                    self.changeFilamentProgress.setMaximum(temperature['tool0Actual'])
-                    self.changeFilamentHeatingFlag = False
-                    if self.loadFlag:
-                        self.changeFilamentLoadFunction()
-                        #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
-                    else:
-                        #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-                        self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
-                        self.changeFilamentRetractFunction()
-
-                self.changeFilamentProgress.setValue(temperature['tool0Actual'])
-            elif self.activeExtruder == 1:
+                    self.tool0TempBar.setMaximum(int(temperature['tool0Actual']))
+                self.tool0TempBar.setValue(int(temperature['tool0Actual']))
+                self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))  # + unichr(176)
+                self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
+                
                 if temperature['tool1Target'] == 0:
-                    self.changeFilamentProgress.setMaximum(300)
-                elif temperature['tool1Target'] - temperature['tool1Actual'] > 1:
-                    self.changeFilamentProgress.setMaximum(temperature['tool1Target'])
+                    self.tool1TempBar.setMaximum(300)
+                    self.tool1TempBar.setStyleSheet(styles.bar_heater_cold)
+                elif temperature['tool1Actual'] <= temperature['tool1Target']:
+                    self.tool1TempBar.setMaximum(int(temperature['tool1Target']))
+                    self.tool1TempBar.setStyleSheet(styles.bar_heater_heating)
                 else:
-                    self.changeFilamentProgress.setMaximum(temperature['tool1Actual'])
-                    self.changeFilamentHeatingFlag = False
-                    if self.loadFlag:
-                        self.changeFilamentLoadFunction()
-                        #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
-                    else:
-                        #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-                        self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
-                        self.changeFilamentRetractFunction()
+                    self.tool1TempBar.setMaximum(int(temperature['tool1Actual']))
+                self.tool1TempBar.setValue(int(temperature['tool1Actual']))
+                self.tool1ActualTemperature.setText(str(int(temperature['tool1Actual'])))  # + unichr(176)
+                self.tool1TargetTemperature.setText(str(int(temperature['tool1Target'])))
 
-                self.changeFilamentProgress.setValue(temperature['tool1Actual'])
+                if temperature['bedTarget'] == 0:
+                    self.bedTempBar.setMaximum(150)
+                    self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
+                elif temperature['bedActual'] <= temperature['bedTarget']:
+                    self.bedTempBar.setMaximum(int(temperature['bedTarget']))
+                    self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
+                else:
+                    self.bedTempBar.setMaximum(int(temperature['bedActual']))
+                self.bedTempBar.setValue(int(temperature['bedActual']))
+                self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))  # + unichr(176))
+                self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))  # + unichr(176))
+
+            except:
+                pass
+
+            # updates the progress bar on the change filament screen
+            if self.changeFilamentHeatingFlag:
+                if self.activeExtruder == 0:
+                    if temperature['tool0Target'] == 0:
+                        self.changeFilamentProgress.setMaximum(300)
+                    elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
+                        self.changeFilamentProgress.setMaximum(int(temperature['tool0Target']))
+                    else:
+                        self.changeFilamentProgress.setMaximum(int(temperature['tool0Actual']))
+                        self.changeFilamentHeatingFlag = False
+                        if self.loadFlag:
+                            self.changeFilamentLoadFunction()
+                            #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
+                        else:
+                            #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
+                            self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
+                            self.changeFilamentRetractFunction()
+
+                    self.changeFilamentProgress.setValue(int(temperature['tool0Actual']))
+                elif self.activeExtruder == 1:
+                    if temperature['tool1Target'] == 0:
+                        self.changeFilamentProgress.setMaximum(300)
+                    elif temperature['tool1Target'] - temperature['tool1Actual'] > 1:
+                        self.changeFilamentProgress.setMaximum(int(temperature['tool1Target']))
+                    else:
+                        self.changeFilamentProgress.setMaximum(int(temperature['tool1Actual']))
+                        self.changeFilamentHeatingFlag = False
+                        if self.loadFlag:
+                            self.changeFilamentLoadFunction()
+                            #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
+                        else:
+                            #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
+                            self.octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
+                            self.changeFilamentRetractFunction()
+
+                    self.changeFilamentProgress.setValue(int(temperature['tool1Actual']))
+        except Exception as e:
+            error_message = f"Error in updateTemperature function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def updatePrintStatus(self, file):
         '''
@@ -308,47 +314,54 @@ class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
         runs at 1HZ, so do things that need to be constantly updated only
         :param file: dict of all the attributes of a particualr file
         '''
-        if file is None:
-            self.currentFile = None
-            self.currentImage = None
-            self.timeLeft.setText("-")
-            self.fileName.setText("-")
-            self.printProgressBar.setValue(0)
-            self.printTime.setText("-")
-            self.playPauseButton.setDisabled(True)  # if file available, make play buttom visible
-
-        else:
-            self.playPauseButton.setDisabled(False)  # if file available, make play buttom visible
-            self.fileName.setText(file['job']['file']['name'])
-            self.currentFile = file['job']['file']['name']
-            if file['progress']['printTime'] is None:
-                self.printTime.setText("-")
-            else:
-                m, s = divmod(file['progress']['printTime'], 60)
-                h, m = divmod(m, 60)
-                d, h = divmod(h, 24)
-                self.printTime.setText("%d:%d:%02d:%02d" % (d, h, m, s))
-
-            if file['progress']['printTimeLeft'] is None:
+        try:
+            if file is None:
+                self.currentFile = None
+                self.currentImage = None
                 self.timeLeft.setText("-")
-            else:
-                m, s = divmod(file['progress']['printTimeLeft'], 60)
-                h, m = divmod(m, 60)
-                d, h = divmod(h, 24)
-                self.timeLeft.setText("%d:%d:%02d:%02d" % (d, h, m, s))
-
-            if file['progress']['completion'] is None:
+                self.fileName.setText("-")
                 self.printProgressBar.setValue(0)
-            else:
-                self.printProgressBar.setValue(file['progress']['completion'])
+                self.printTime.setText("-")
+                self.playPauseButton.setDisabled(True)  # if file available, make play buttom visible
 
-            '''
-            If image is available from server, set it, otherwise display default image.
-            If the image was already loaded, dont load it again.
-            '''
-            if self.currentImage != self.currentFile:
-                self.currentImage = self.currentFile
-                self.displayThumbnail(self.printPreviewMain, self.currentFile, usb=False)
+            else:
+                self.playPauseButton.setDisabled(False)  # if file available, make play buttom visible
+                self.fileName.setText(file['job']['file']['name'])
+                self.currentFile = file['job']['file']['name']
+                if file['progress']['printTime'] is None:
+                    self.printTime.setText("-")
+                else:
+                    m, s = divmod(file['progress']['printTime'], 60)
+                    h, m = divmod(m, 60)
+                    d, h = divmod(h, 24)
+                    self.printTime.setText("%d:%d:%02d:%02d" % (d, h, m, s))
+
+                if file['progress']['printTimeLeft'] is None:
+                    self.timeLeft.setText("-")
+                else:
+                    m, s = divmod(file['progress']['printTimeLeft'], 60)
+                    h, m = divmod(m, 60)
+                    d, h = divmod(h, 24)
+                    self.timeLeft.setText("%d:%d:%02d:%02d" % (d, h, m, s))
+
+                if file['progress']['completion'] is None:
+                    self.printProgressBar.setValue(0)
+                else:
+                    self.printProgressBar.setValue(file['progress']['completion'])
+
+                '''
+                If image is available from server, set it, otherwise display default image.
+                If the image was already loaded, dont load it again.
+                '''
+                if self.currentImage != self.currentFile:
+                    self.currentImage = self.currentFile
+                    self.displayThumbnail(self.printPreviewMain, self.currentFile, usb=False)
+
+        except Exception as e:
+            error_message = f"Error in updatePrinterStatus function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def updateStatus(self, status):
         '''
@@ -356,49 +369,55 @@ class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
         this function updates the status bar, as well as enables/disables relavent buttons
         :param status: String of the status text
         '''
+        try:
+            self.printerStatusText = status
+            self.printerStatus.setText(status)
 
-        self.printerStatusText = status
-        self.printerStatus.setText(status)
+            if status == "Printing":  # Green
+                self.printerStatusColour.setStyleSheet(styles.printer_status_green)
+            elif status == "Offline":  # Red
+                self.printerStatusColour.setStyleSheet(styles.printer_status_red)
+            elif status == "Paused":  # Amber
+                self.printerStatusColour.setStyleSheet(styles.printer_status_amber)
+            elif status == "Operational":  # Amber
+                self.printerStatusColour.setStyleSheet(styles.printer_status_blue)
 
-        if status == "Printing":  # Green
-            self.printerStatusColour.setStyleSheet(styles.printer_status_green)
-        elif status == "Offline":  # Red
-            self.printerStatusColour.setStyleSheet(styles.printer_status_red)
-        elif status == "Paused":  # Amber
-            self.printerStatusColour.setStyleSheet(styles.printer_status_amber)
-        elif status == "Operational":  # Amber
-            self.printerStatusColour.setStyleSheet(styles.printer_status_blue)
+            '''
+            Depending on Status, enable and Disable Buttons
+            '''
+            if status == "Printing":
+                self.playPauseButton.setChecked(True)
+                self.stopButton.setDisabled(False)
+                self.motionTab.setDisabled(True)
+                self.changeFilamentButton.setDisabled(True)
+                self.menuCalibrateButton.setDisabled(True)
+                self.menuPrintButton.setDisabled(True)
+                self.doorLockButton.setDisabled(False)
+                # if not self.__timelapse_enabled:
+                #     octopiclient.cancelPrint()
+                #     self.coolDownAction()
 
-        '''
-        Depending on Status, enable and Disable Buttons
-        '''
-        if status == "Printing":
-            self.playPauseButton.setChecked(True)
-            self.stopButton.setDisabled(False)
-            self.motionTab.setDisabled(True)
-            self.changeFilamentButton.setDisabled(True)
-            self.menuCalibrateButton.setDisabled(True)
-            self.menuPrintButton.setDisabled(True)
-            self.doorLockButton.setDisabled(False)
-            # if not self.__timelapse_enabled:
-            #     octopiclient.cancelPrint()
-            #     self.coolDownAction()
-
-        elif status == "Paused":
-            self.playPauseButton.setChecked(False)
-            self.stopButton.setDisabled(False)
-            self.motionTab.setDisabled(False)
-            self.changeFilamentButton.setDisabled(False)
-            self.menuCalibrateButton.setDisabled(True)
-            self.menuPrintButton.setDisabled(True)
-            self.doorLockButton.setDisabled(False)
+            elif status == "Paused":
+                self.playPauseButton.setChecked(False)
+                self.stopButton.setDisabled(False)
+                self.motionTab.setDisabled(False)
+                self.changeFilamentButton.setDisabled(False)
+                self.menuCalibrateButton.setDisabled(True)
+                self.menuPrintButton.setDisabled(True)
+                self.doorLockButton.setDisabled(False)
 
 
-        else:
-            self.stopButton.setDisabled(True)
-            self.playPauseButton.setChecked(False)
-            self.motionTab.setDisabled(False)
-            self.changeFilamentButton.setDisabled(False)
-            self.menuCalibrateButton.setDisabled(False)
-            self.menuPrintButton.setDisabled(False)
-            self.doorLockButton.setDisabled(True)
+            else:
+                self.stopButton.setDisabled(True)
+                self.playPauseButton.setChecked(False)
+                self.motionTab.setDisabled(False)
+                self.changeFilamentButton.setDisabled(False)
+                self.menuCalibrateButton.setDisabled(False)
+                self.menuPrintButton.setDisabled(False)
+                self.doorLockButton.setDisabled(True)
+
+        except Exception as e:
+            error_message = f"Error in updateStatus function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass

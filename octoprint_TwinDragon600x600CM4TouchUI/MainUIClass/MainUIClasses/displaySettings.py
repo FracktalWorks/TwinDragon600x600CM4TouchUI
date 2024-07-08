@@ -31,12 +31,12 @@ class displaySettings(mainGUI.Ui_MainWindow):
         try:
             log_info("Starting setup.")
             # Display settings
-            self.rotateDisplay.pressed.connect(self.showRotateDisplaySettingsPage)
+            # self.rotateDisplay.pressed.connect(self.showRotateDisplaySettingsPage)
             self.calibrateTouch.pressed.connect(self.touchCalibration)
             self.displaySettingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
 
             # Rotate Display Settings
-            self.rotateDisplaySettingsDoneButton.pressed.connect(self.saveRotateDisplaySettings)
+            # self.rotateDisplaySettingsDoneButton.pressed.connect(self.saveRotateDisplaySettings)
             self.rotateDisplaySettingsCancelButton.pressed.connect(
                 lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
             log_info("Completed setup.")

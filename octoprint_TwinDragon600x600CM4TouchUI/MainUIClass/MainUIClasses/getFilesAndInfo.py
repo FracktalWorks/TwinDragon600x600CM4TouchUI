@@ -7,15 +7,20 @@ from MainUIClass.config import _fromUtf8
 from hurry.filesize import size
 import mainGUI
 from logger import *
-from decorators import run_async
+from MainUIClass.decorators import run_async
 import base64
 
 class getFilesAndInfo(mainGUI.Ui_MainWindow):
     def __init__(self):
-        log_info("Starting get files init.")
-        self.octopiclient = None
-        super().__init__()
-        
+        try:
+            log_info("Starting get files init.")
+            self.octopiclient = None
+            super().__init__()
+        except Exception as e:
+            error_message = f"Error in getFilesAndInfo __init__: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
     
     def setup(self):
         """
@@ -24,7 +29,8 @@ class getFilesAndInfo(mainGUI.Ui_MainWindow):
         log_info("Setting up getFilesAndInfo.")
         try:
             log_debug("Octopiclient inside class getFilesAndInfo: " + str(self.octopiclient))
-                    # fileListLocalScreen
+
+            # fileListLocalScreen
             self.localStorageBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.printLocationPage))
             self.localStorageScrollUp.pressed.connect(
                 lambda: self.fileListWidget.setCurrentRow(self.fileListWidget.currentRow() - 1))
@@ -63,42 +69,46 @@ class getFilesAndInfo(mainGUI.Ui_MainWindow):
         Gets the file list from octoprint server, displays it on the list, as well as
         sets the stacked widget page to the file list page
         '''
-        self.stackedWidget.setCurrentWidget(self.fileListLocalPage)
-        files = []
-        for file in self.octopiclient.retrieveFileInformation()['files']:
-            if file["type"] == "machinecode":
-                files.append(file)
+        try:
+            self.stackedWidget.setCurrentWidget(self.fileListLocalPage)
+            files = []
+            for file in self.octopiclient.retrieveFileInformation()['files']:
+                if file["type"] == "machinecode":
+                    files.append(file)
 
-        self.fileListWidget.clear()
-        files.sort(key=lambda d: d['date'], reverse=True)
-        # for item in [f['name'] for f in files] :
-        #     self.fileListWidget.addItem(item)
-        self.fileListWidget.addItems([f['name'] for f in files])
-        self.fileListWidget.setCurrentRow(0)
+            self.fileListWidget.clear()
+            files.sort(key=lambda d: d['date'], reverse=True)
+            self.fileListWidget.addItems([f['name'] for f in files])
+            self.fileListWidget.setCurrentRow(0)
+        except Exception as e:
+            error_message = f"Error in fileListLocal: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def fileListUSB(self):
         '''
-        Gets the file list from octoprint server, displays it on the list, as well as
+        Gets the file list from USB drive, displays it on the list, as well as
         sets the stacked widget page to the file list page
-        ToDO: Add deapth of folders recursively get all gcodes
         '''
-        self.stackedWidget.setCurrentWidget(self.fileListUSBPage)
-        self.fileListWidgetUSB.clear()
-        files = subprocess.Popen("ls /media/usb0 | grep gcode", stdout=subprocess.PIPE, shell=True).communicate()[0]
-        files = files.decode('utf-8').split('\n')
-        files = filter(None, files)
-        # for item in files:
-        #     self.fileListWidgetUSB.addItem(item)
-        self.fileListWidgetUSB.addItems(files)
-        self.fileListWidgetUSB.setCurrentRow(0)
-
+        try:
+            self.stackedWidget.setCurrentWidget(self.fileListUSBPage)
+            self.fileListWidgetUSB.clear()
+            files = subprocess.Popen("ls /media/usb0 | grep gcode", stdout=subprocess.PIPE, shell=True).communicate()[0]
+            files = files.decode('utf-8').split('\n')
+            files = filter(None, files)
+            self.fileListWidgetUSB.addItems(files)
+            self.fileListWidgetUSB.setCurrentRow(0)
+        except Exception as e:
+            error_message = f"Error in fileListUSB: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def printSelectedLocal(self):
-
         '''
-        gets information about the selected file from octoprint server,
-        as well as sets the current page to the print selected page.
-        This function also selects the file to print from octoprint
+        Displays detailed information about the selected file and sets the current page to the print selected page.
+        Also displays preview image if available.
         '''
         try:
             self.fileSelected.setText(self.fileListWidget.currentItem().text())
@@ -124,100 +134,106 @@ class getFilesAndInfo(mainGUI.Ui_MainWindow):
                     ("%.2f cm" % file['gcodeAnalysis']['filament']['tool0']['volume']) + chr(179))
             except KeyError:
                 self.filamentVolumeSelected.setText('-')
-
             try:
                 self.filamentLengthFileSelected.setText(
                     "%.2f mm" % file['gcodeAnalysis']['filament']['tool0']['length'])
             except KeyError:
                 self.filamentLengthFileSelected.setText('-')
-            # uncomment to select the file when selectedd in list
-            # self.octopiclient.selectFile(self.fileListWidget.currentItem().text(), False)
-            self.stackedWidget.setCurrentWidget(self.printSelectedLocalPage)
 
-            '''
-            If image is available from server, set it, otherwise display default image
-            '''
             self.displayThumbnail(self.printPreviewSelected, str(self.fileListWidget.currentItem().text()), usb=False)
 
-        except:
-            print ("Log: Nothing Selected")
-            # Set image fot print preview:
-            # self.printPreviewSelected.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/thumbnail.png")))
-            # print self.fileListWidget.currentItem().text().replace(".gcode","")
-            # self.printPreviewSelected.setPixmap(QtGui.QPixmap(_fromUtf8("/home/pi/.octoprint/uploads/{}.png".format(self.FileListWidget.currentItem().text().replace(".gcode","")))))
-
-            # Check if the PNG file exists, and if it does display it, or diplay a default picture.
+        except Exception as e:
+            error_message = f"Error in printSelectedLocal: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def printSelectedUSB(self):
         '''
-        Sets the screen to the print selected screen for USB, on which you can transfer to local drive and view preview image.
-        :return:
+        Displays detailed information about the selected file from USB drive and sets the current page to the print selected page.
+        Also displays preview image if available.
         '''
         try:
             self.fileSelectedUSBName.setText(self.fileListWidgetUSB.currentItem().text())
             self.stackedWidget.setCurrentWidget(self.printSelectedUSBPage)
             self.displayThumbnail(self.printPreviewSelectedUSB, '/media/usb0/' + str(self.fileListWidgetUSB.currentItem().text()), usb=True)
-        except:
-            print ("Log: Nothing Selected")
-
-            # Set Image from USB
+        except Exception as e:
+            error_message = f"Error in printSelectedUSB: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def transferToLocal(self, prnt=False):
         '''
-        Transfers a file from USB mounted at /media/usb0 to octoprint's watched folder so that it gets automatically detected bu Octoprint.
-        Warning: If the file is read-only, octoprint API for reading the file crashes.
+        Transfers a file from USB mounted at /media/usb0 to octoprint's watched folder so that it gets automatically detected by Octoprint.
         '''
-
-        file = '/media/usb0/' + str(self.fileListWidgetUSB.currentItem().text())
-
-        self.uploadThread = ThreadFileUpload(file, prnt=prnt)
-        self.uploadThread.start()
-        if prnt:
-            self.stackedWidget.setCurrentWidget(self.homePage)
+        try:
+            file = '/media/usb0/' + str(self.fileListWidgetUSB.currentItem().text())
+            self.uploadThread = ThreadFileUpload(file, prnt=prnt)
+            self.uploadThread.start()
+            if prnt:
+                self.stackedWidget.setCurrentWidget(self.homePage)
+        except Exception as e:
+            error_message = f"Error in transferToLocal: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def printFile(self):
         '''
-        Prints the file selected from printSelected()
+        Prints the file selected from printSelectedLocal().
         '''
-        self.octopiclient.home(['x', 'y', 'z'])
-        self.octopiclient.selectFile(self.fileListWidget.currentItem().text(), True)
-        # self.octopiclient.startPrint()
-        self.checkKlipperPrinterCFG()
-        self.stackedWidget.setCurrentWidget(self.homePage)
-
+        try:
+            self.octopiclient.home(['x', 'y', 'z'])
+            self.octopiclient.selectFile(self.fileListWidget.currentItem().text(), True)
+            self.checkKlipperPrinterCFG()
+            self.stackedWidget.setCurrentWidget(self.homePage)
+        except Exception as e:
+            error_message = f"Error in printFile: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def deleteItem(self):
         '''
-        Deletes a gcode file, and if associates, its image file from the memory
+        Deletes a selected gcode file and its associated image file from Octoprint.
         '''
-        self.octopiclient.deleteFile(self.fileListWidget.currentItem().text())
-        self.octopiclient.deleteFile(self.fileListWidget.currentItem().text().replace(".gcode", ".png"))
-        # delete PNG also
-        self.fileListLocal()
+        try:
+            self.octopiclient.deleteFile(self.fileListWidget.currentItem().text())
+            self.octopiclient.deleteFile(self.fileListWidget.currentItem().text().replace(".gcode", ".png"))
+            self.fileListLocal()
+        except Exception as e:
+            error_message = f"Error in deleteItem: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
-
-    def getImageFromGcode(self,gcodeLocation):
+    def getImageFromGcode(self, gcodeLocation):
         '''
-        Gets the image from the gcode text file
+        Retrieves an image embedded in a gcode file.
         '''
-        with open(gcodeLocation, 'rb') as f:
-            content = f.readlines()[:500]
-            content = b''.join(content)
-        start = content.find(b'; thumbnail begin')
-        end = content.find(b'; thumbnail end')
-        if start != -1 and end != -1:
-            thumbnail = content[start:end]
-            thumbnail = base64.b64decode(thumbnail[thumbnail.find(b'\n') + 1:].replace(b'; ', b'').replace(b'\r\n', b''))
-            return thumbnail
-        else:
-            return False
+        try:
+            with open(gcodeLocation, 'rb') as f:
+                content = f.readlines()[:500]
+                content = b''.join(content)
+            start = content.find(b'; thumbnail begin')
+            end = content.find(b'; thumbnail end')
+            if start != -1 and end != -1:
+                thumbnail = content[start:end]
+                thumbnail = base64.b64decode(thumbnail[thumbnail.find(b'\n') + 1:].replace(b'; ', b'').replace(b'\r\n', b''))
+                return thumbnail
+            else:
+                return False
+        except Exception as e:
+            error_message = f"Error in getImageFromGcode: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     @run_async
-    def displayThumbnail(self,labelObject,fileLocation, usb=False):
+    def displayThumbnail(self, labelObject, fileLocation, usb=False):
         '''
-        Displays the image on the label object
-        :param labelObject: QLabel object to display the image
-        :param img: image to display
+        Displays an image thumbnail on the specified label object.
         '''
         try:
             pixmap = QtGui.QPixmap()
@@ -230,7 +246,9 @@ class getFilesAndInfo(mainGUI.Ui_MainWindow):
                 labelObject.setPixmap(pixmap)
             else:
                 labelObject.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/thumbnail.png")))
-        except:
+        except Exception as e:
+            error_message = f"Error in displayThumbnail: {str(e)}"
+            log_error(error_message)
             labelObject.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/thumbnail.png")))
 
 class ThreadFileUpload(QtCore.QThread):
@@ -241,7 +259,7 @@ class ThreadFileUpload(QtCore.QThread):
 
     def run(self):
         '''
-        Uploads the file and optionally prints it.
+        Uploads a file to Octoprint and optionally prints it.
         '''
         try:
             try:
@@ -258,7 +276,7 @@ class ThreadFileUpload(QtCore.QThread):
 
             log_info("File upload completed successfully.")
         except Exception as e:
-            error_message = f"Error uploading file: {str(e)}"
+            error_message = f"Error in ThreadFileUpload run: {str(e)}"
             log_error(error_message)
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass

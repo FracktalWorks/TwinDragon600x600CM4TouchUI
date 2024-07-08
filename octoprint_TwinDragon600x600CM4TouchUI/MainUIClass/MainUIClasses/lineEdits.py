@@ -8,25 +8,35 @@ import dialog
 
 class lineEdits(mainGUI.Ui_MainWindow):
     def __init__(self):
-        log_info("Starting line edits init.")
-        super().__init__()
+        try:
+            log_info("Starting line edits init.")
+            super().__init__()
+            log_info("Completed line edits init.")
+        except Exception as e:
+            error_message = f"Error in lineEdits __init__: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
     
     def setup(self):
         """
         Sets up various line edits for UI elements.
         """
-        log_info("Setting up line edits.")
         try:
+            log_info("Setting up line edits.")
+
             font = QtGui.QFont()
             font.setFamily(_fromUtf8("Gotham"))
             font.setPointSize(15)
 
+            # Setup WiFi password line edit
             self.wifiPasswordLineEdit = ClickableLineEdit(self.wifiSettingsPage)
             self.wifiPasswordLineEdit.setGeometry(QtCore.QRect(300, 170, 400, 60))
             self.wifiPasswordLineEdit.setFont(font)
             self.wifiPasswordLineEdit.setStyleSheet(styles.textedit)
             self.wifiPasswordLineEdit.setObjectName(_fromUtf8("wifiPasswordLineEdit"))
 
+            # Setup static IP line edits
             font.setPointSize(11)
             self.staticIPLineEdit = ClickableLineEdit(self.ethStaticSettings)
             self.staticIPLineEdit.setGeometry(QtCore.QRect(200, 15, 450, 40))

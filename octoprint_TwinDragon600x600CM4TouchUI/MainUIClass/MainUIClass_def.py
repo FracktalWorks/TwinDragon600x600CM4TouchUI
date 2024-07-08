@@ -38,6 +38,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
     def __init__(self):
         try:
             log_info("Starting mainUI init.")
+            
 
             '''
             This method gets called when an object of type MainUIClass is defined
@@ -46,6 +47,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             super(MainUIClass, self).__init__()
             log_info("Done initialising all mainUI classes.")
 
+            # raise Exception("Ono error happened :'(")
             
             if not Development:
                 formatter = logging.Formatter("%(asctime)s %(message)s")
@@ -376,49 +378,52 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
         '''
         Checks for valid printer.cfg and restores if needed
         '''
-
-        # Open the printer.cfg file:
         try:
-            with open('/home/pi/printer.cfg', 'r') as currentConfigFile:
-                currentConfig = currentConfigFile.read()
-                if "# MCU Config" in currentConfig:
-                    configCorruptedFlag = False
-                    print("Printer Config File OK")
-                else:
-                    configCorruptedFlag = True
-                    print("Printer Config File Corrupted")
-        except:
-            configCorruptedFlag = True
-            print("Printer Config File Not Found")
-
-        if configCorruptedFlag:
-            backupFiles = sorted(glob.glob('/home/pi/printer-*.cfg'), key=os.path.getmtime, reverse=True)
-            print("\n".join(backupFiles))
-            for backupFile in backupFiles:
-                with open(str(backupFile), 'r') as backupConfigFile:
-                    backupConfig = backupConfigFile.read()
-                    if "# MCU Config" in backupConfig:
-                        try:
-                            os.remove('/home/pi/printer.cfg')
-                        except:
-                            print("Files does not exist for deletion")
-                        try:
-                            os.rename(backupFile, '/home/pi/printer.cfg')
-                            print("Printer Config File Restored")
-                            return()
-                        except:
-                            pass
-            # If no valid backups found, show error dialog:
-            dialog.WarningOk(self, "Printer Config File corrupted. Contact Fracktal support or raise a ticket at care.fracktal.in")
-            print("Printer Config File corrupted. Contact Fracktal support or raise a ticket at care.fracktal.in")
-            if self.printerStatus == "Printing":
-                self.octopiclient.cancelPrint()
-                self.coolDownAction()
-        elif not configCorruptedFlag:
-            backupFiles = sorted(glob.glob('/home/pi/printer-*.cfg'), key=os.path.getmtime, reverse=True)
+            # Open the printer.cfg file:
             try:
-                for backupFile in backupFiles[5:]:
-                    os.remove(backupFile)
+                with open('/home/pi/printer.cfg', 'r') as currentConfigFile:
+                    currentConfig = currentConfigFile.read()
+                    if "# MCU Config" in currentConfig:
+                        configCorruptedFlag = False
+                        print("Printer Config File OK")
+                    else:
+                        configCorruptedFlag = True
+                        print("Printer Config File Corrupted")
             except:
-                pass
+                configCorruptedFlag = True
+                print("Printer Config File Not Found")
 
+            if configCorruptedFlag:
+                backupFiles = sorted(glob.glob('/home/pi/printer-*.cfg'), key=os.path.getmtime, reverse=True)
+                print("\n".join(backupFiles))
+                for backupFile in backupFiles:
+                    with open(str(backupFile), 'r') as backupConfigFile:
+                        backupConfig = backupConfigFile.read()
+                        if "# MCU Config" in backupConfig:
+                            try:
+                                os.remove('/home/pi/printer.cfg')
+                            except:
+                                print("Files does not exist for deletion")
+                            try:
+                                os.rename(backupFile, '/home/pi/printer.cfg')
+                                print("Printer Config File Restored")
+                                return()
+                            except:
+                                pass
+                # If no valid backups found, show error dialog:
+                dialog.WarningOk(self, "Printer Config File corrupted. Contact Fracktal support or raise a ticket at care.fracktal.in")
+                print("Printer Config File corrupted. Contact Fracktal support or raise a ticket at care.fracktal.in")
+                if self.printerStatus == "Printing":
+                    self.octopiclient.cancelPrint()
+                    self.coolDownAction()
+            elif not configCorruptedFlag:
+                backupFiles = sorted(glob.glob('/home/pi/printer-*.cfg'), key=os.path.getmtime, reverse=True)
+                try:
+                    for backupFile in backupFiles[5:]:
+                        os.remove(backupFile)
+                except:
+                    pass
+        except Exception as e:
+            log_error(f"Error during checkKlipperPrinterCFG in MainUIClass: {str(e)}")
+            if dialog.WarningOk(self, f"Error during handleStartUpError in MainUIClass: {str(e)}"):
+                pass

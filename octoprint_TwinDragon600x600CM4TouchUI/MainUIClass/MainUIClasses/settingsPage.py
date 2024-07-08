@@ -15,35 +15,23 @@ class settingsPage(mainGUI.Ui_MainWindow):
         log_info("Starting settings init.")
         self.octopiclient = None
         super().__init__()
-        
-    
+
     def setup(self):
         try:
             log_debug("Octopiclient inside class settingsPage: " + str(self.octopiclient))
             self.settingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
-            self.networkSettingsButton.pressed.connect(
-                lambda: self.stackedWidget.setCurrentWidget(self.networkSettingsPage))
-            self.displaySettingsButton.pressed.connect(
-                lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
+            self.networkSettingsButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.networkSettingsPage))
+            self.displaySettingsButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
             self.pairPhoneButton.pressed.connect(self.pairPhoneApp)
             self.OTAButton.pressed.connect(self.softwareUpdate)
             self.versionButton.pressed.connect(self.displayVersionInfo)
-            self.restartButton.pressed.connect(self.askAndReboot)
+            self.restartButton.pressed.connect(lambda: askAndReboot(self))
             self.restoreFactoryDefaultsButton.pressed.connect(self.restoreFactoryDefaults)
             self.restorePrintSettingsButton.pressed.connect(self.restorePrintDefaults)
-
             self.QRCodeBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
+            log_info("Settings page setup completed.")
         except Exception as e:
             error_message = f"Error in setup function of settingsPage class: {str(e)}"
-            log_error(error_message)
-            if dialog.WarningOk(self, error_message, overlay=True):
-                pass
-
-    def askAndReboot_settings(self):
-        try:
-            askAndReboot(self)
-        except Exception as e:
-            error_message = f"Error in askAndReboot_settings function: {str(e)}"
             log_error(error_message)
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass
@@ -55,7 +43,6 @@ class settingsPage(mainGUI.Ui_MainWindow):
             updateAvailable = False
             self.performUpdateButton.setDisabled(True)
 
-            # Firmware version on the MKS https://github.com/FracktalWorks/OctoPrint-JuliaFirmwareUpdater
             self.updateListWidget.addItem(self.getFirmwareVersion())
 
             data = self.octopiclient.getSoftwareUpdateInfo()
@@ -77,6 +64,7 @@ class settingsPage(mainGUI.Ui_MainWindow):
             if updateAvailable:
                 self.performUpdateButton.setDisabled(False)
             self.stackedWidget.setCurrentWidget(self.OTAUpdatePage)
+            log_info("Version info displayed.")
         except Exception as e:
             error_message = f"Error in displayVersionInfo function: {str(e)}"
             log_error(error_message)
@@ -96,10 +84,11 @@ class settingsPage(mainGUI.Ui_MainWindow):
                 print('Update Available')
                 if dialog.SuccessYesNo(self, "Update Available! Update Now?", overlay=True):
                     self.octopiclient.performSoftwareUpdate()
-
+                log_info("Software update performed.")
             else:
                 if dialog.SuccessOk(self, "System is Up To Date!", overlay=True):
                     print('Update Unavailable')
+                log_info("System is up to date.")
         except Exception as e:
             error_message = f"Error in softwareUpdate function: {str(e)}"
             log_error(error_message)
@@ -117,9 +106,9 @@ class settingsPage(mainGUI.Ui_MainWindow):
                 if dialog.WarningOk(self, "Network Disconnected"):
                     return
             self.QRCodeLabel.setPixmap(
-                qrcode.make("http://"+ qrip, image_factory=Image).pixmap())
+                qrcode.make("http://" + qrip, image_factory=Image).pixmap())
             self.stackedWidget.setCurrentWidget(self.QRCodePage)
-
+            log_info("Phone app paired successfully.")
         except Exception as e:
             error_message = f"Error in pairPhoneApp function: {str(e)}"
             log_error(error_message)
@@ -127,42 +116,53 @@ class settingsPage(mainGUI.Ui_MainWindow):
                 pass
 
     def restoreFactoryDefaults(self):
-        if dialog.WarningYesNo(self, "Are you sure you want to restore machine state to factory defaults?\nWarning: Doing so will also reset printer profiles, WiFi & Ethernet config.",
-                               overlay=True):
-            os.system('sudo cp -f config/dhcpcd.conf /etc/dhcpcd.conf')
-            os.system('sudo cp -f config/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf')
-            os.system('sudo rm -rf /home/pi/.octoprint/users.yaml')
-            os.system('sudo cp -f config/users.yaml /home/pi/.octoprint/users.yaml')
-            os.system('sudo rm -rf /home/pi/.octoprint/printerProfiles/*')
-            os.system('sudo rm -rf /home/pi/.octoprint/scripts/gcode')
-            os.system('sudo rm -rf /home/pi/.octoprint/print_restore.json')
-            os.system('sudo cp -f config/config.yaml /home/pi/.octoprint/config.yaml')
-            # os.system('sudo rm -rf /home/pi/.fw_logo.dat')
-            self.tellAndReboot("Settings restored. Rebooting...")
+        try:
+            if dialog.WarningYesNo(self, "Are you sure you want to restore machine state to factory defaults?\nWarning: Doing so will also reset printer profiles, WiFi & Ethernet config.", overlay=True):
+                os.system('sudo cp -f config/dhcpcd.conf /etc/dhcpcd.conf')
+                os.system('sudo cp -f config/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf')
+                os.system('sudo rm -rf /home/pi/.octoprint/users.yaml')
+                os.system('sudo cp -f config/users.yaml /home/pi/.octoprint/users.yaml')
+                os.system('sudo rm -rf /home/pi/.octoprint/printerProfiles/*')
+                os.system('sudo rm -rf /home/pi/.octoprint/scripts/gcode')
+                os.system('sudo rm -rf /home/pi/.octoprint/print_restore.json')
+                os.system('sudo cp -f config/config.yaml /home/pi/.octoprint/config.yaml')
+                self.tellAndReboot("Settings restored. Rebooting...")
+                log_info("Factory defaults restored and reboot initiated.")
+        except Exception as e:
+            error_message = f"Error in restoreFactoryDefaults function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def restorePrintDefaults(self):
-        if dialog.WarningYesNo(self, "Are you sure you want to restore default print settings?\nWarning: Doing so will erase offsets and bed leveling info",
-                               overlay=True):
-            os.system('sudo cp -f firmware/GCodes.cfg /home/pi/GCodes.cfg')
-            print("copied Gcodes")
-            os.system('sudo cp -f firmware/IDEX_mode.cfg /home/pi/IDEX_mode.cfg')
-            print("copied idex mode")
-            os.system('sudo cp -f firmware/printer.cfg /home/pi/printer.cfg')
-            print("copied printer cfg")
-            os.system('sudo cp -f firmware/variables.cfg /home/pi/variables.cfg')
-            print("copied variables")
-            self.octopiclient.gcode(command='M502')
-            self.octopiclient.gcode(command='M500')
-            self.octopiclient.gcode(command='FIRMWARE_RESTART')
+        try:
+            if dialog.WarningYesNo(self, "Are you sure you want to restore default print settings?\nWarning: Doing so will erase offsets and bed leveling info", overlay=True):
+                os.system('sudo cp -f firmware/GCodes.cfg /home/pi/GCodes.cfg')
+                log_info("Copied GCodes.cfg")
+                os.system('sudo cp -f firmware/IDEX_mode.cfg /home/pi/IDEX_mode.cfg')
+                log_info("Copied IDEX_mode.cfg")
+                os.system('sudo cp -f firmware/printer.cfg /home/pi/printer.cfg')
+                log_info("Copied printer.cfg")
+                os.system('sudo cp -f firmware/variables.cfg /home/pi/variables.cfg')
+                log_info("Copied variables.cfg")
+                self.octopiclient.gcode(command='M502')
+                self.octopiclient.gcode(command='M500')
+                self.octopiclient.gcode(command='FIRMWARE_RESTART')
+                log_info("Default print settings restored and firmware restarted.")
+        except Exception as e:
+            error_message = f"Error in restorePrintDefaults function: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def getFirmwareVersion(self):
         try:
             log_info("Fetching firmware version.")
             headers = {'X-Api-Key': apiKey}
-            req = requests.get('http://{}/plugin/JuliaFirmwareUpdater/hardware/version'.format(ip), headers=headers)
+            req = requests.get(f'http://{ip}/plugin/JuliaFirmwareUpdater/hardware/version', headers=headers)
             data = req.json()
             if req.status_code == requests.codes.ok:
-                info = u'\u2713' if not data["update_available"] else u"\u2717"    # icon
+                info = u'\u2713' if not data["update_available"] else u"\u2717"
                 info += " Firmware: "
                 info += "Unknown" if not data["variant_name"] else data["variant_name"]
                 info += "\n"

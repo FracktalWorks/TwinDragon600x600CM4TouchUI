@@ -158,4 +158,7 @@ class filamentSensor(mainGUI.Ui_MainWindow):
             #         if dialog.WarningOk(self, "Door opened"):
             #             return
         except Exception as e:
-            print(e)
+            error_message = f"Error in toggleFilamentSensor: {str(e)}"
+            log_error(error_message)
+            if WarningOk(self, "Failed to toggle filament sensor", overlay=True):
+                pass

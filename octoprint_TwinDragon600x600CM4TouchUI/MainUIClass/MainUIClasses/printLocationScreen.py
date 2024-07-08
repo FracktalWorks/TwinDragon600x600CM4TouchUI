@@ -11,7 +11,7 @@ class printLocationScreen(mainGUI.Ui_MainWindow):
     
     def setup(self):
         try:
-
+            log_info("Setting up print location screen.")
             # Connect buttons to functions        
             self.printLocationScreenBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.fromLocalButton.pressed.connect(self.fileListLocal)

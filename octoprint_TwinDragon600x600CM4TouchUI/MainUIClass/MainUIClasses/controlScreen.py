@@ -64,62 +64,98 @@ class controlScreen(mainGUI.Ui_MainWindow):
                 pass
 
     def control(self):
-        self.stackedWidget.setCurrentWidget(self.controlPage)
-        if self.toolToggleTemperatureButton.isChecked():
-            self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
-        else:
-            self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
-        self.bedTempSpinBox.setProperty("value", float(self.bedTargetTemperature.text()))
+        try:
+            log_info("Calling control method.")
+            self.stackedWidget.setCurrentWidget(self.controlPage)
+            if self.toolToggleTemperatureButton.isChecked():
+                self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
+            else:
+                self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
+            self.bedTempSpinBox.setProperty("value", float(self.bedTargetTemperature.text()))
+            log_info("Completed control method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen control: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def setStep(self, stepRate):
-        '''
-        Sets the class variable "Step" which would be needed for movement and joging
-        :param step: step multiplier for movement in the move
-        :return: nothing
-        '''
-
-        if stepRate == 100:
-            self.step100Button.setFlat(True)
-            self.step1Button.setFlat(False)
-            self.step10Button.setFlat(False)
-            self.step = 100
-        if stepRate == 1:
-            self.step100Button.setFlat(False)
-            self.step1Button.setFlat(True)
-            self.step10Button.setFlat(False)
-            self.step = 1
-        if stepRate == 10:
-            self.step100Button.setFlat(False)
-            self.step1Button.setFlat(False)
-            self.step10Button.setFlat(True)
-            self.step = 10
+        try:
+            log_info(f"Setting step rate to {stepRate}.")
+            if stepRate == 100:
+                self.step100Button.setFlat(True)
+                self.step1Button.setFlat(False)
+                self.step10Button.setFlat(False)
+                self.step = 100
+            if stepRate == 1:
+                self.step100Button.setFlat(False)
+                self.step1Button.setFlat(True)
+                self.step10Button.setFlat(False)
+                self.step = 1
+            if stepRate == 10:
+                self.step100Button.setFlat(False)
+                self.step1Button.setFlat(False)
+                self.step10Button.setFlat(True)
+                self.step = 10
+            log_info("Completed setStep method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen setStep: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def setToolTemp(self):
-        if self.toolToggleTemperatureButton.isChecked():
-            self.octopiclient.gcode(command='M104 T1 S' + str(self.toolTempSpinBox.value()))
-            # self.octopiclient.setToolTemperature({"tool1": self.toolTempSpinBox.value()})
-        else:
-            self.octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
-            # self.octopiclient.setToolTemperature({"tool0": self.toolTempSpinBox.value()})
+        try:
+            log_info("Setting tool temperature.")
+            if self.toolToggleTemperatureButton.isChecked():
+                self.octopiclient.gcode(command='M104 T1 S' + str(self.toolTempSpinBox.value()))
+            else:
+                self.octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
+            log_info("Completed setToolTemp method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen setToolTemp: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def preheatToolTemp(self, temp):
-        if self.toolToggleTemperatureButton.isChecked():
-            self.octopiclient.gcode(command='M104 T1 S' + str(temp))
-        else:
-            self.octopiclient.gcode(command='M104 T0 S' + str(temp))
-        self.toolTempSpinBox.setProperty("value", temp)
+        try:
+            log_info(f"Preheating tool temperature to {temp}.")
+            if self.toolToggleTemperatureButton.isChecked():
+                self.octopiclient.gcode(command='M104 T1 S' + str(temp))
+            else:
+                self.octopiclient.gcode(command='M104 T0 S' + str(temp))
+            self.toolTempSpinBox.setProperty("value", temp)
+            log_info("Completed preheatToolTemp method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen preheatToolTemp: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def preheatBedTemp(self, temp):
-        self.octopiclient.gcode(command='M140 S' + str(temp))
-        self.bedTempSpinBox.setProperty("value", temp)
+        try:
+            log_info(f"Preheating bed temperature to {temp}.")
+            self.octopiclient.gcode(command='M140 S' + str(temp))
+            self.bedTempSpinBox.setProperty("value", temp)
+            log_info("Completed preheatBedTemp method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen preheatBedTemp: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def coolDownAction(self):
-        ''''
-        Turns all heaters and fans off
-        '''
-        self.octopiclient.gcode(command='M107')
-        self.octopiclient.setToolTemperature({"tool0": 0, "tool1": 0})
-        # self.octopiclient.setToolTemperature({"tool0": 0})
-        self.octopiclient.setBedTemperature(0)
-        self.toolTempSpinBox.setProperty("value", 0)
-        self.bedTempSpinBox.setProperty("value", 0)
+        try:
+            log_info("Performing cooldown action.")
+            self.octopiclient.gcode(command='M107')
+            self.octopiclient.setToolTemperature({"tool0": 0, "tool1": 0})
+            self.octopiclient.setBedTemperature(0)
+            self.toolTempSpinBox.setProperty("value", 0)
+            self.bedTempSpinBox.setProperty("value", 0)
+            log_info("Completed coolDownAction method.")
+        except Exception as e:
+            error_message = f"Error in controlScreen coolDownAction: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass

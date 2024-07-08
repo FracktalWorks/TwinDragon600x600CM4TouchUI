@@ -6,9 +6,15 @@ from logger import *
 
 class homePage(mainGUI.Ui_MainWindow):
     def __init__(self):
-        log_info("Starting home page init.")
-        self.octopiclient = None
-        super().__init__()
+        try:
+            log_info("Starting home page init.")
+            self.octopiclient = None
+            super().__init__()
+        except Exception as e:
+            error_message = f"Error in homePage __init__: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
     
     def setup(self):
         """
@@ -20,7 +26,6 @@ class homePage(mainGUI.Ui_MainWindow):
             
             # Connect signals
             self.stopButton.pressed.connect(self.stopActionMessageBox)
-            # self.menuButton.pressed.connect(self.keyboardButton)
             self.menuButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.controlButton.pressed.connect(self.control)
             self.playPauseButton.clicked.connect(self.playPauseAction)
@@ -37,18 +42,29 @@ class homePage(mainGUI.Ui_MainWindow):
         '''
         Displays a message box asking if the user is sure if he wants to turn off the print
         '''
-        if dialog.WarningYesNo(self, "Are you sure you want to stop the print?"):
-            self.octopiclient.cancelPrint()
+        try:
+            if dialog.WarningYesNo(self, "Are you sure you want to stop the print?"):
+                self.octopiclient.cancelPrint()
+        except Exception as e:
+            error_message = f"Error in stopActionMessageBox: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
 
     def playPauseAction(self):
         '''
         Toggles Play/Pause of a print depending on the status of the print
         '''
-        if self.printerStatusText == "Operational":
-            if self.playPauseButton.isChecked:
-                self.checkKlipperPrinterCFG()
-                self.octopiclient.startPrint()
-        elif self.printerStatusText == "Printing":
-           self.octopiclient.pausePrint()
-        elif self.printerStatusText == "Paused":
-            self.octopiclient.pausePrint()
+        try:
+            status = self.printerStatusText  # Assuming printerStatusText is set elsewhere
+            if status == "Operational":
+                if self.playPauseButton.isChecked():
+                    self.checkKlipperPrinterCFG()
+                    self.octopiclient.startPrint()
+            elif status == "Printing" or status == "Paused":
+                self.octopiclient.pausePrint()
+        except Exception as e:
+            error_message = f"Error in playPauseAction: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass

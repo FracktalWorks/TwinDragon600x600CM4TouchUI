@@ -19,6 +19,7 @@ class printRestore(mainGUI.Ui_MainWindow):
         Displays a message box alerting the user of a filament error
         '''
         try:
+            log_info("Starting print restore message box.")
             if dialog.WarningYesNo(self, f"{file} Did not finish, would you like to restore?"):
                 response = self.octopiclient.restore(restore=True)
                 if response["status"] == "Successfully Restored":

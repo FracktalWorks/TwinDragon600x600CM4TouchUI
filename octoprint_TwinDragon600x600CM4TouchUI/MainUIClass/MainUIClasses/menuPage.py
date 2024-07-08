@@ -5,15 +5,24 @@ import dialog
 
 class menuPage(mainGUI.Ui_MainWindow):
     def __init__(self):
-        log_info("Starting menu page init.")
-        super().__init__()
+        try:
+            log_info("Starting menu page init.")
+            super().__init__()
+            self.setup()
+            log_info("Completed menu page init.")
+        except Exception as e:
+            error_message = f"Error in menuPage __init__: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
     
     def setup(self):
         """
         Sets up signal connections for menu page UI elements.
         """
-        log_info("Setting up menu page.")
         try:
+            log_info("Setting up menu page.")
+
             self.menuBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.homePage))
             self.menuControlButton.pressed.connect(self.control)
             self.menuPrintButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.printLocationPage))
@@ -26,3 +35,4 @@ class menuPage(mainGUI.Ui_MainWindow):
             log_error(error_message)
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass
+   

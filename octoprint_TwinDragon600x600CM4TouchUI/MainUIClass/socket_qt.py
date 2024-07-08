@@ -93,7 +93,7 @@ class QtWebsocket(QtCore.QThread):
 
     @run_async
     def process(self, data):
-
+        # print(json.dumps(data, indent=4))
         if "event" in data:
             if data["event"]["type"] == "Connected":
                 self.connected_signal.emit()
@@ -197,6 +197,7 @@ class QtWebsocket(QtCore.QThread):
                                     'tool1Target': temp(data, "tool1", "target"),
                                     'bedActual': temp(data, "bed", "actual"),
                                     'bedTarget': temp(data, "bed", "target")}
+                    # print("Emitting temp signal")
                     self.temperatures_signal.emit(temperatures)
                 except KeyError:
                     # temperatures = {'tool0Actual': 0,
