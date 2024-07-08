@@ -116,9 +116,6 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             
             super(MainUIClass, self).setupUi(MainWindow)
 
-            log_info("Setup printer name start.")
-            log_debug(" self parameter being passed: " + str(self))
-
             lineEdits.setup(self)
 
             self.menuCartButton.setDisabled(True)
@@ -128,7 +125,6 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
 
             self.printerName = "Twin Dragon" #self.getPrinterName()
             log_info(str(self.printerName))
-            log_info("setup printer name done.")
 
             # self.setPrinterNameComboBox()
             setCalibrationPosition(self)

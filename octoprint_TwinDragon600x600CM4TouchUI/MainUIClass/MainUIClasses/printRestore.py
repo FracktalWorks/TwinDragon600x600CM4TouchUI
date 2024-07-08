@@ -27,7 +27,7 @@ class printRestore(mainGUI.Ui_MainWindow):
                 else:
                     dialog.WarningOk(self, response["status"])
             else:
-                octoprintAPI.restore(restore=False)
+                self.octopiclient.restore(restore=False)
         except Exception as e:
             log_error(f"Error during print restore: {str(e)}")
             dialog.WarningOk(self, f"Error during print restore: {str(e)}")

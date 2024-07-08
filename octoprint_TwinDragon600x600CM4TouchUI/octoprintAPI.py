@@ -18,15 +18,19 @@ class octoprintAPI:
 
         If a session is provided, it will be used (mostly for testing)
         '''
-        if not ip:
-            raise TypeError('Required argument \'ip\' not found or emtpy')
-        if not apiKey:
-            raise TypeError('Required argument \'apiKey\' not found or emtpy')
-        self.ip = ip
-        self.apiKey = apiKey
-        # Try a simple request to see if the API key works
-        # Keep the info, in case we need it later
-        self.version = self.version()
+        print("Starting octorintAPI init.")
+        try:
+            if not ip:
+                raise TypeError('Required argument \'ip\' not found or emtpy')
+            if not apiKey:
+                raise TypeError('Required argument \'apiKey\' not found or emtpy')
+            self.ip = ip
+            self.apiKey = apiKey
+            # Try a simple request to see if the API key works
+            # Keep the info, in case we need it later
+            self.version = self.version()
+        except Exception as e:
+            print(e)
 
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ++++++++++++++++++++++++ File Handling  ++++++++++++++++++++++++++++++++++++++

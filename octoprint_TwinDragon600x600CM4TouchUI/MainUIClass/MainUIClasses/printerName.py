@@ -16,6 +16,7 @@ else:
     json_file_name = os.path.join(parent_dir, 'printer_name.json')
 
 allowed_names = ["Julia Advanced", "Julia Extended", "Julia Pro Single Nozzle"]
+default_name = "Twin Dragon"
 
 class printerName(mainGUI.Ui_MainWindow):
     def __init__(self):
@@ -66,18 +67,18 @@ class printerName(mainGUI.Ui_MainWindow):
         try:
             log_info("Initializing printer name JSON.")
             if not os.path.exists(json_file_name):
-                data = {'printer_name': 'Julia Advanced'}
+                data = {'printer_name': default_name}
                 self.writePrinterNameJson(data)
             else:
                 try:
                     with open(json_file_name, 'r') as file:
                         data = json.load(file)
                     if data.get('printer_name') not in allowed_names:
-                        self.setPrinterName("Julia Advanced")
+                        self.setPrinterName(default_name)
                 except (FileNotFoundError, json.JSONDecodeError) as e:
                     error_message = "Error loading printerName JSON: " + str(e)
                     log_error(error_message)
-                    self.setPrinterName("Julia Advanced")
+                    self.setPrinterName(default_name)
             log_info("Printer name JSON initialization completed.")
         except Exception as e:
             error_message = "Error initializing printerName JSON: " + str(e)
@@ -129,14 +130,13 @@ class printerName(mainGUI.Ui_MainWindow):
             log_info("Getting printer name from JSON.")
             with open(json_file_name, 'r') as file:
                 data = json.load(file)
-                printer_name = data.get('printer_name', 'Julia Advanced')  # Default to 'Julia Advanced'
+                printer_name = data.get('printer_name', default_name) 
                 log_info(f"Printer name retrieved: {printer_name}")
                 return printer_name
         except (FileNotFoundError, json.JSONDecodeError) as e:
             error_message = "Error loading printerName JSON: " + str(e)
             log_error(error_message)
-            return 'Julia Advanced'
+            return default_name
         except Exception as e:
             error_message = "Unexpected error while loading printerName JSON: " + str(e)
             log_error(error_message)
-            return 'Julia Advanced'
