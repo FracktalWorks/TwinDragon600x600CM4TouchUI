@@ -121,12 +121,12 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             self.menuCartButton.setDisabled(True)
             self.testPrintsButton.setDisabled(True)
 
-            # printerName.setup(self)
+            printerName.setup(self)
 
-            self.printerName = "Twin Dragon" #self.getPrinterName()
+            self.printerName = self.getPrinterName()
             log_info(str(self.printerName))
 
-            # self.setPrinterNameComboBox()
+            self.setPrinterNameComboBox()
             setCalibrationPosition(self)
             setTool0PurgePositions(self)
             setTool1PurgePosition(self)
@@ -135,7 +135,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             self.tool0PurgePosition = getTool0PurgePosition(self)
             self.tool1PurgePosition = getTool1PurgePosition(self)
 
-            if self.printerName == "Twin Dragon":
+            if self.printerName == "Twin Dragon 600 x 600 x 400":
                 self.movie = QtGui.QMovie("templates/img/loading-90.gif")
 
             self.loadingGif.setMovie(self.movie)
@@ -146,7 +146,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             if dialog.WarningOk(self, f"Error during setupUi in MainUIClass: {str(e)}"):
                 pass
 
-    def safeProceed(self, octopiclient):
+    def safeProceed(self):
         try:
             log_info("safe proceed")
             
@@ -313,6 +313,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             activeExtruder.setup(self)
             idexConfig.setup(self)
             doorLock.setup(self)
+            printerName.setup(self)
             self.QtSocket.connected_signal.connect(self.onServerConnected)
 
             log_info("set actions complete")

@@ -15,8 +15,8 @@ else:
     parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
     json_file_name = os.path.join(parent_dir, 'printer_name.json')
 
-allowed_names = ["Julia Advanced", "Julia Extended", "Julia Pro Single Nozzle"]
-default_name = "Twin Dragon"
+allowed_names = ["Twin Dragon 300 x 300 x 300", "Twin Dragon 400 x 400 x 400", "Twin Dragon 600 x 600 x 400"]
+default_name = "Twin Dragon 600 x 600 x 400"
 
 class printerName(mainGUI.Ui_MainWindow):
     def __init__(self):
