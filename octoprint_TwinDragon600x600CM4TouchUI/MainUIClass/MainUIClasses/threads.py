@@ -80,5 +80,5 @@ class ThreadSanityCheck(QtCore.QThread):
     def get_octopiclient(self):
         # while self.octopiclient == None:
         #     log_warning("octopiclient: " + str(self.octopiclient) + "\t not returning.")
-        # log_info("returning octopiclient successfully.")
+        log_info("Returning octopiclient successfully.")
         return self.octopiclient

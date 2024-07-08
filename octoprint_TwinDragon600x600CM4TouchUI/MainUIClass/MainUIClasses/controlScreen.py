@@ -56,7 +56,7 @@ class controlScreen(mainGUI.Ui_MainWindow):
 
             self.moveZPBabyStep.pressed.connect(lambda: self.octopiclient.gcode(command='M290 Z0.025'))
             self.moveZMBabyStep.pressed.connect(lambda: self.octopiclient.gcode(command='M290 Z-0.025'))
-            log_info("Completed setup.")
+            log_info("Completed controlScreen setup.")
         except Exception as e:
             error_message = f"Error in controlScreen setup: {str(e)}"
             log_error(error_message)

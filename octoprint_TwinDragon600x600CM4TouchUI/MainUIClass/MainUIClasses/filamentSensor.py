@@ -31,7 +31,7 @@ class filamentSensor(mainGUI.Ui_MainWindow):
         try:
             log_info("Starting setup.")
             self.toggleFilamentSensorButton.clicked.connect(self.toggleFilamentSensor)
-            log_info("Completed setup.")
+            log_info("Completed FilamentSensor setup.")
         except Exception as e:
             error_message = f"Error in filamentSensor setup: {str(e)}"
             log_error(error_message)

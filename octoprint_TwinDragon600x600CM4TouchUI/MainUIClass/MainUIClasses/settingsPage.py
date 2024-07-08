@@ -156,25 +156,31 @@ class settingsPage(mainGUI.Ui_MainWindow):
                 pass
 
     def getFirmwareVersion(self):
-        try:
-            log_info("Fetching firmware version.")
-            headers = {'X-Api-Key': apiKey}
-            req = requests.get(f'http://{ip}/plugin/JuliaFirmwareUpdater/hardware/version', headers=headers)
-            data = req.json()
-            if req.status_code == requests.codes.ok:
-                info = u'\u2713' if not data["update_available"] else u"\u2717"
-                info += " Firmware: "
-                info += "Unknown" if not data["variant_name"] else data["variant_name"]
-                info += "\n"
-                if data["variant_name"]:
-                    info += "   Installed: "
-                    info += "Unknown" if not data["version_board"] else data["version_board"]
-                info += "\n"
-                info += "" if not data["version_repo"] else "   Available: " + data["version_repo"]
-                return info
-        except Exception as e:
-            error_message = f"Error in getFirmwareVersion function: {str(e)}"
-            log_error(error_message)
-            if dialog.WarningOk(self, error_message, overlay=True):
-                pass
-        return u'\u2713' + "Firmware: Unknown\n"
+        """
+        This is currently getting Marlin fimrware, unnecessary for Klipper based printers.
+        """
+        pass
+
+        # try:
+        #     log_info("Fetching firmware version.")
+        #     headers = {'X-Api-Key': apiKey}
+        #     req = requests.get(f'http://{ip}/plugin/JuliaFirmwareUpdater/hardware/version', headers=headers)
+        #     log_info("Req: " + str(req))
+        #     data = req.json()
+        #     if req.status_code == requests.codes.ok:
+        #         info = u'\u2713' if not data["update_available"] else u"\u2717"
+        #         info += " Firmware: "
+        #         info += "Unknown" if not data["variant_name"] else data["variant_name"]
+        #         info += "\n"
+        #         if data["variant_name"]:
+        #             info += "   Installed: "
+        #             info += "Unknown" if not data["version_board"] else data["version_board"]
+        #         info += "\n"
+        #         info += "" if not data["version_repo"] else "   Available: " + data["version_repo"]
+        #         return info
+        # except Exception as e:
+        #     error_message = f"Error in getFirmwareVersion function: {str(e)}"
+        #     log_error(error_message)
+        #     if dialog.WarningOk(self, error_message, overlay=True):
+        #         pass
+        # return u'\u2713' + "Firmware: Unknown\n"

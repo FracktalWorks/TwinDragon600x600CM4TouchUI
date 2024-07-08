@@ -69,7 +69,7 @@ class idexConfig(mainGUI.Ui_MainWindow):
                 lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
                                     str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'singleTest'))
 
-            log_info("Completed setup.")
+            log_info("Completed idexConfig setup.")
         except Exception as e:
             error_message = f"Error in idexCalibrationPage setup: {str(e)}"
             log_error(error_message)

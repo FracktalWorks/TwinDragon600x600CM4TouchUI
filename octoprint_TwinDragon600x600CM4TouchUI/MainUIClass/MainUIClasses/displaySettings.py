@@ -39,7 +39,7 @@ class displaySettings(mainGUI.Ui_MainWindow):
             # self.rotateDisplaySettingsDoneButton.pressed.connect(self.saveRotateDisplaySettings)
             self.rotateDisplaySettingsCancelButton.pressed.connect(
                 lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
-            log_info("Completed setup.")
+            log_info("Completed displaySettings setup.")
         except Exception as e:
             error_message = f"Error in displaySettings setup: {str(e)}"
             log_error(error_message)

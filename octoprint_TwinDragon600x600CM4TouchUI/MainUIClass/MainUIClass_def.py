@@ -327,9 +327,9 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
     
     def handleStartupError(self):
         try:
-            log_info("handle startup error")
+            log_info("Handle startup error")
             
-            print('Unable to connect to Octoprint Server')
+            log_warning('Unable to connect to Octoprint Server')
             if dialog.WarningYesNo(self,  "Server Error, Restore failsafe settings?", overlay=True):
                 os.system('sudo rm -rf /home/pi/.octoprint/users.yaml')
                 os.system('sudo rm -rf /home/pi/.octoprint/config.yaml')
@@ -366,8 +366,8 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             log_info("Exiting on server connected.")
 
         except Exception as e:
-            log_error(f"Error during handleStartUpError in MainUIClass: {str(e)}")
-            if dialog.WarningOk(self, f"Error during handleStartUpError in MainUIClass: {str(e)}"):
+            log_error(f"Error during onServerConnected in MainUIClass: {str(e)}")
+            if dialog.WarningOk(self, f"Error during onServerConnected in MainUIClass: {str(e)}"):
                 pass
 
     def checkKlipperPrinterCFG(self):
@@ -421,5 +421,5 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
                     pass
         except Exception as e:
             log_error(f"Error during checkKlipperPrinterCFG in MainUIClass: {str(e)}")
-            if dialog.WarningOk(self, f"Error during handleStartUpError in MainUIClass: {str(e)}"):
+            if dialog.WarningOk(self, f"Error during checkKlipperPrinterCFG in MainUIClass: {str(e)}"):
                 pass

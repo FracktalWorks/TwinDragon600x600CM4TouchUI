@@ -38,7 +38,7 @@ class changeFilamentRoutine(mainGUI.Ui_MainWindow):
             # self.retractFilamentButton.pressed.connect(lambda: self.octopiclient.extrude(-20))
             # self.ExtrudeButton.pressed.connect(lambda: self.octopiclient.extrude(20))
 
-            log_info("Completed setup.")
+            log_info("Completed changeFilamentRoutine setup.")
         except Exception as e:
             error_message = f"Error in changeFilamentRoutine setup: {str(e)}"
             log_error(error_message)

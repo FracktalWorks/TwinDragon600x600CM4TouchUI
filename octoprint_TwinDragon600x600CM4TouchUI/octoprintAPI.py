@@ -3,6 +3,8 @@ import os
 import requests
 import json
 import base64
+from logger import *
+import dialog
 
 '''
 ToDo:
@@ -18,19 +20,16 @@ class octoprintAPI:
 
         If a session is provided, it will be used (mostly for testing)
         '''
-        print("Starting octorintAPI init.")
-        try:
-            if not ip:
-                raise TypeError('Required argument \'ip\' not found or emtpy')
-            if not apiKey:
-                raise TypeError('Required argument \'apiKey\' not found or emtpy')
-            self.ip = ip
-            self.apiKey = apiKey
-            # Try a simple request to see if the API key works
-            # Keep the info, in case we need it later
-            self.version = self.version()
-        except Exception as e:
-            print(e)
+        log_info("Starting octorintAPI init.")
+        if not ip:
+            raise TypeError('Required argument \'ip\' not found or emtpy')
+        if not apiKey:
+            raise TypeError('Required argument \'apiKey\' not found or emtpy')
+        self.ip = ip
+        self.apiKey = apiKey
+        # Try a simple request to see if the API key works
+        # Keep the info, in case we need it later
+        self.version = self.version()
 
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ++++++++++++++++++++++++ File Handling  ++++++++++++++++++++++++++++++++++++++
@@ -650,10 +649,22 @@ class octoprintAPI:
 
 
     def isFailureDetected(self):
-        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/isFailureDetected'
-        headers = {'X-Api-Key': self.apiKey}
-        response = requests.get(url, headers=headers)
-        temp = response.json()
+        temp = None
+        try:
+            log_debug("Self parameter inside isFailureDetected: " + str(self))
+            log_debug("IP: " + str(self.ip))
+            log_debug("API Key: " + str(self.apiKey))
+            url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/isFailureDetected'
+            headers = {'X-Api-Key': self.apiKey}
+            response = requests.get(url, headers=headers)
+            log_debug("Response: " + str(response))
+            temp = response.json()
+    
+        except Exception as e:
+            error_message = f"Error in ifFailureDetected function of octoprintAPI: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
         return temp
 
     def restore(self, restore = False):
