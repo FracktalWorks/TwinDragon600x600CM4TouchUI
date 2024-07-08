@@ -146,7 +146,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             if dialog.WarningOk(self, f"Error during setupUi in MainUIClass: {str(e)}"):
                 pass
 
-    def safeProceed(self):
+    def safeProceed(self, octopiclient):
         try:
             log_info("safe proceed")
             
