@@ -45,9 +45,21 @@ class calibrationPage(mainGUI.Ui_MainWindow):
             self.quickStep3CancelButton.pressed.connect(self.cancelStep)
             self.quickStep4CancelButton.pressed.connect(self.cancelStep)
             self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
+            self.inputShaperCalibrateButton.pressed.connect(self.inputShaperCalibrateButton)
             log_info("Completed calibrationPage setup.")
         except Exception as e:
             error_message = f"Error in calibrationPage setup: {str(e)}"
+            log_error(error_message)
+            if dialog.WarningOk(self, error_message, overlay=True):
+                pass
+
+    def inputShaperCalibrate(self):
+        try:
+            self.octopiclient.gcode(command='G28')
+            self.octopiclient.gcode(command='SHAPER_CALIBRATE')
+            self.octopiclient.gcode(command='SAVE_CONFIG')
+        except Exception as e:
+            error_message = f"Error in inptuShaperCalibrate: {str(e)}"
             log_error(error_message)
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass

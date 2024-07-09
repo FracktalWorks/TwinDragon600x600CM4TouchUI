@@ -176,7 +176,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>8</number>
+     <number>14</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -2072,7 +2072,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>263</width>
+         <width>785</width>
          <height>900</height>
         </rect>
        </property>
@@ -5661,7 +5661,7 @@ QToolButton:focus {
        <rect>
         <x>350</x>
         <y>200</y>
-        <width>331</width>
+        <width>171</width>
         <height>141</height>
        </rect>
       </property>
@@ -5761,6 +5761,63 @@ QToolButton:focus {
       <property name="icon">
        <iconset>
         <normaloff>templates/img/IDEX.png</normaloff>templates/img/IDEX.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>70</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="toolButtonStyle">
+       <enum>Qt::ToolButtonTextUnderIcon</enum>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="inputShaperCalibrateButton">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>200</y>
+        <width>161</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Gotham</family>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QToolButton {
+     border: 1px solid rgb(87, 87, 87);
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));
+
+
+}
+
+QToolButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #dadbde, stop: 1 #f6f7fa);
+}
+
+QToolButton:flat {
+    border: none; /* no border for a flat push button */
+}
+
+QToolButton:default {
+    border-color: navy; /* make the default button prominent */
+}
+
+QToolButton:focus {
+	outline: none;
+}</string>
+      </property>
+      <property name="text">
+       <string>Input Shaper</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../../../../Downloads/Input Shaper.png</normaloff>../../../../Downloads/Input Shaper.png</iconset>
       </property>
       <property name="iconSize">
        <size>
