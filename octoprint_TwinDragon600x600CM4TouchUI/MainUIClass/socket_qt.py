@@ -102,7 +102,6 @@ class QtWebsocket(QtCore.QThread):
 
     @run_async
     def process(self, data):
-        # print(json.dumps(data, indent=4))
         if "event" in data:
             if data["event"]["type"] == "Connected":
                 self.connected_signal.emit()
@@ -207,6 +206,8 @@ class QtWebsocket(QtCore.QThread):
                                     'bedActual': temp(data, "bed", "actual"),
                                     'bedTarget': temp(data, "bed", "target")}
                     # print("Emitting temp signal")
+                    # print(json.dumps(data, indent=4))
+                    print(self)
                     self.temperatures_signal.emit(temperatures)
                 except KeyError:
                     # temperatures = {'tool0Actual': 0,
@@ -232,7 +233,7 @@ class QtWebsocket(QtCore.QThread):
     def reconnect(self):
         self.stop_event.set()
         self.ws.close()
-        self.__init__()  
+        # self.__init__()  
         self.start()
 
 
@@ -248,7 +249,7 @@ class HeartbeatChecker(threading.Thread):
             while not self.stop_event.is_set():
                 if self.last_heartbeat_time is not None:
                     time_since_last_heartbeat = time.time() - self.last_heartbeat_time
-                    if time_since_last_heartbeat > 60:
+                    if time_since_last_heartbeat > 300: #5 Minutes
                         print("No heartbeat received for 60 seconds. Reestablishing connection.")
                         self.ws.reconnect()
                     else:

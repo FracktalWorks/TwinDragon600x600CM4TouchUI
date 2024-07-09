@@ -226,6 +226,7 @@ class socketConnections(QtWebsocket, mainGUI.Ui_MainWindow):
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
         '''
         try:
+            print("ENTERED UPDATE TEMPERATURE")
             try:
                 if temperature['tool0Target'] == 0:
                     self.tool0TempBar.setMaximum(300)
