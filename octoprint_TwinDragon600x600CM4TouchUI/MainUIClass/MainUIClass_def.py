@@ -147,7 +147,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             if dialog.WarningOk(self, f"Error during setupUi in MainUIClass: {str(e)}"):
                 pass
 
-    def safeProceed(self, octopiclient):
+    def safeProceed(self):
         try:
             log_info("safe proceed")
             
@@ -159,7 +159,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             if not Development:
                 self.stackedWidget.setCurrentWidget(self.homePage)
                 # self.Lock_showLock()
-                self.networkingInstance.setIPStatus()
+                self.setIPStatus()
             else:
                 self.stackedWidget.setCurrentWidget(self.homePage)
 

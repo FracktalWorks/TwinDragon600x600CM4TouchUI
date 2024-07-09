@@ -1,10 +1,11 @@
 import datetime
 from MainUIClass.config import Development
 
-if Development:
-    LOG_FILE = 'log.txt'
-else:
-    LOG_FILE = '/home/pi/.octoprint/logs/TouchUI_log.txt'
+# if Development:
+LOG_FILE = 'log.txt'
+# else:
+#     LOG_FILE = '/home/pi/.octoprint/logs/TouchUI_log.txt'
+#     print("log file in .octoprint")
 
 def write_to_log(file_path, message):
     with open(file_path, 'w') as file:
