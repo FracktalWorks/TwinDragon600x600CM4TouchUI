@@ -55,6 +55,7 @@ class calibrationPage(mainGUI.Ui_MainWindow):
 
     def inputShaperCalibrate(self):
         try:
+            dialog.WarningOk(self, "Wait for all calibration movements to finish before proceeding.", overlay= True)
             self.octopiclient.gcode(command='G28')
             self.octopiclient.gcode(command='SHAPER_CALIBRATE')
             self.octopiclient.gcode(command='SAVE_CONFIG')
