@@ -77,12 +77,22 @@ filaments = [
 
 filaments = OrderedDict(filaments)
 
-calibrationPosition = {}
-tool0PurgePosition = {}
-tool1PurgePosition = {}
-
-printerCalibrationPositions = {
+calibrationPositions = {
     "Twin Dragon 600 x 600 x 400" : 
+    {
+        'X1': 63, 'Y1': 67, #110, 18
+        'X2': 542, 'Y2': 67, #510, 18
+        'X3': 303, 'Y3': 567, #310, 308
+        'X4': 303, 'Y4': 20
+    },
+    "Twin Dragon 400 x 400 x 400" : 
+    {
+        'X1': 63, 'Y1': 67, #110, 18
+        'X2': 542, 'Y2': 67, #510, 18
+        'X3': 303, 'Y3': 567, #310, 308
+        'X4': 303, 'Y4': 20
+    },
+    "Twin Dragon 300 x 300 x 300" : 
     {
         'X1': 63, 'Y1': 67, #110, 18
         'X2': 542, 'Y2': 67, #510, 18
@@ -91,15 +101,23 @@ printerCalibrationPositions = {
     }
 }
 
-printerTool0PurgePositions = {
-    "Twin Dragon 600 x 600 x 400" : {'X': -27, 'Y': -112}
+tool0PurgePositions = {
+    "Twin Dragon 600 x 600 x 400" : {'X': -27, 'Y': -112},
+    "Twin Dragon 400 x 400 x 400" : {'X': -27, 'Y': -112},
+    "Twin Dragon 300 x 300 x 300" : {'X': -27, 'Y': -112}
 }
 
-printerTool1PurgePositions = {
-    "Twin Dragon 600 x 600 x 400" :{'X': 648, 'Y': -112}
+tool1PurgePositions = {
+    "Twin Dragon 600 x 600 x 400" : {'X': 648, 'Y': -112},
+    "Twin Dragon 400 x 400 x 400" : {'X': -27, 'Y': -112},
+    "Twin Dragon 300 x 300 x 300" : {'X': -27, 'Y': -112}
 }
 
-ptfeTubeLength = 2400 #2400 for 600x600, 1500 for 600x300 keep as multiples of 300 only
+ptfeTubeLengths = {
+    "Twin Dragon 600 x 600 x 400" : 2400,
+    "Twin Dragon 400 x 400 x 400" : 2400,
+    "Twin Dragon 300 x 300 x 300" : 2400
+}  #2400 for 600x600, 1500 for 600x300 keep as multiples of 300 only
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -107,24 +125,15 @@ except AttributeError:
     def _fromUtf8(s):
         return s
     
-def setCalibrationPosition(self):
-    global calibrationPosition
-    calibrationPosition = printerCalibrationPositions[self.printerName]
-
-def setTool0PurgePositions(self):
-    global tool0PurgePosition
-    tool0PurgePosition = printerTool0PurgePositions[self.printerName]
-
-def setTool1PurgePosition(self):
-    global tool1PurgePosition
-    tool1PurgePosition = printerTool1PurgePositions[self.printerName]
-
 def getCalibrationPosition(self):
-    return calibrationPosition
+    return calibrationPositions[self.printerName]
 
 def getTool0PurgePosition(self):
-    return tool0PurgePosition
+    return tool0PurgePositions[self.printerName]
 
 def getTool1PurgePosition(self):
-    return tool1PurgePosition
+    return tool1PurgePositions[self.printerName]
+
+def getPtfeTubeLength(self):
+    return ptfeTubeLengths[self.printerName]
 

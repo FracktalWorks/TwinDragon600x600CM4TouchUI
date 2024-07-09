@@ -24,7 +24,7 @@ from MainUIClass.MainUIClasses.activeExtruder import activeExtruder
 from MainUIClass.MainUIClasses.doorLock import doorLock
 from MainUIClass.MainUIClasses.idexConfig import idexConfig
 # from MainUIClass.MainUIClasses.lockSettings import lockSettings
-from MainUIClass.config import _fromUtf8, setCalibrationPosition, setTool0PurgePositions, setTool1PurgePosition, getCalibrationPosition, getTool0PurgePosition, getTool1PurgePosition, Development
+from MainUIClass.config import _fromUtf8, getCalibrationPosition, getTool0PurgePosition, getTool1PurgePosition, getPtfeTubeLength, Development
 import logging
 from MainUIClass.socket_qt import QtWebsocket
 from logger import *
@@ -127,13 +127,11 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             log_info(str(self.printerName))
 
             self.setPrinterNameComboBox()
-            setCalibrationPosition(self)
-            setTool0PurgePositions(self)
-            setTool1PurgePosition(self)
 
             self.calibrationPosition = getCalibrationPosition(self)
             self.tool0PurgePosition = getTool0PurgePosition(self)
             self.tool1PurgePosition = getTool1PurgePosition(self)
+            self.ptfeTubeLength = getPtfeTubeLength(self)
 
             if self.printerName == "Twin Dragon 600 x 600 x 400":
                 self.movie = QtGui.QMovie("templates/img/loading-90.gif")

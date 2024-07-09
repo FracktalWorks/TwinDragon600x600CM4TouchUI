@@ -131,7 +131,7 @@ class changeFilamentRoutine(mainGUI.Ui_MainWindow):
             once filament is loaded, this function is called to extrude filament till the toolhead
             '''
             self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
-            for i in range(int(ptfeTubeLength/150)):
+            for i in range(int(self.ptfeTubeLength/150)):
                 self.octopiclient.gcode("G91")
                 self.octopiclient.gcode("G1 E150 F1500")
                 self.octopiclient.gcode("G90")
@@ -167,7 +167,7 @@ class changeFilamentRoutine(mainGUI.Ui_MainWindow):
             self.octopiclient.gcode("G1 E-150 F2400")
             time.sleep(self.calcExtrudeTime(150, 2400))
             self.octopiclient.gcode("G90")
-            for i in range(int(ptfeTubeLength/150)):
+            for i in range(int(self.ptfeTubeLength/150)):
                 self.octopiclient.gcode("G91")
                 self.octopiclient.gcode("G1 E-150 F1500")
                 self.octopiclient.gcode("G90")
