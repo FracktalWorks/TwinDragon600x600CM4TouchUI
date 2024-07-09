@@ -5,7 +5,6 @@ from logger import *
 import dialog
 import time
 from MainUIClass.decorators import run_async
-from MainUIClass.config import ptfeTubeLength
 
 class changeFilamentRoutine(mainGUI.Ui_MainWindow):
     def __init__(self):

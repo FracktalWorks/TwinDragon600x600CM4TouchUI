@@ -33,19 +33,6 @@ class networking(wifiSettingsPage, staticIPSettings):
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass
 
-    def networkInfo(self):
-        """
-        Handles displaying network information page.
-        """
-        try:
-            log_info("Displaying network information page.")
-            self.stackedWidget.setCurrentWidget(self.networkInfoPage)
-        except Exception as e:
-            error_message = f"Error navigating to network info page: {str(e)}"
-            log_error(error_message)
-            if dialog.WarningOk(self, error_message, overlay=True):
-                pass
-
     def wifiSettings(self):
         """
         Handles displaying WiFi settings page.

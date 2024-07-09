@@ -106,8 +106,9 @@ class settingsPage(mainGUI.Ui_MainWindow):
                 if dialog.WarningOk(self, "Network Disconnected"):
                     return
             self.QRCodeLabel.setPixmap(
-                qrcode.make("http://" + qrip, image_factory=Image).pixmap())
+                qrcode.make("http://"+ qrip, image_factory=Image).pixmap())
             self.stackedWidget.setCurrentWidget(self.QRCodePage)
+
             log_info("Phone app paired successfully.")
         except Exception as e:
             error_message = f"Error in pairPhoneApp function: {str(e)}"

@@ -135,6 +135,9 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
 
             if self.printerName == "Twin Dragon 600 x 600 x 400":
                 self.movie = QtGui.QMovie("templates/img/loading-90.gif")
+            else:
+                self.movie = QtGui.QMovie("templates/img/loading-90.gif")
+
 
             self.loadingGif.setMovie(self.movie)
             self.movie.start()
