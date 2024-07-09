@@ -2072,7 +2072,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>785</width>
+         <width>263</width>
          <height>900</height>
         </rect>
        </property>
@@ -4154,6 +4154,21 @@ QComboBox QAbstractItemView {
     background: white;
 }</string>
       </property>
+      <item>
+       <property name="text">
+        <string>Twin Dragon 600 x 600 x 400</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Twin Dragon 400 x 400 x 400</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Twin Dragon 300 x 300 x 300</string>
+       </property>
+      </item>
      </widget>
      <widget class="QPushButton" name="enterPrinterNameButton">
       <property name="geometry">
