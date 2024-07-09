@@ -221,6 +221,8 @@ class QtWebsocket(QtCore.QThread):
     def on_open(self,ws):
         self.authenticate()
         self.heartbeat_checker.start()
+        raise Exception("Exception raised manually after starting heart beat checker thread")
+
 
     def on_close(self, ws):
         # self.stop_event.set()
@@ -233,7 +235,6 @@ class QtWebsocket(QtCore.QThread):
     def reconnect(self):
         self.stop_event.set()
         self.ws.close()
-        # self.__init__()  
         self.start()
 
 
@@ -243,6 +244,7 @@ class HeartbeatChecker(threading.Thread):
         self.ws = ws
         self.stop_event = stop_event
         self.last_heartbeat_time = None
+        self.start_time = time.time()
 
     def run(self):
         try:
@@ -252,6 +254,7 @@ class HeartbeatChecker(threading.Thread):
                     if time_since_last_heartbeat > 300: #5 Minutes
                         print("No heartbeat received for 60 seconds. Reestablishing connection.")
                         self.ws.reconnect()
+                    
                     else:
                         print(f"Heartbeat received at {time.ctime(time.time())}, Time difference: {time_since_last_heartbeat} seconds")
                 time.sleep(5)  # Check every 5 seconds
