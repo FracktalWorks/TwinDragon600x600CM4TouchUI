@@ -4156,17 +4156,22 @@ QComboBox QAbstractItemView {
       </property>
       <item>
        <property name="text">
-        <string>Twin Dragon 600 x 600 x 400</string>
+        <string>Twin Dragon 600</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>Twin Dragon 400 x 400 x 400</string>
+        <string>Twin Dragon 400</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>Twin Dragon 300 x 300 x 300</string>
+        <string>Twin Dragon 300</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Twin Dragon 600 x 300</string>
        </property>
       </item>
      </widget>
