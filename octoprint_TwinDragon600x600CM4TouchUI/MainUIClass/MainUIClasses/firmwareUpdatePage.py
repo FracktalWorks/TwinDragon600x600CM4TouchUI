@@ -3,6 +3,7 @@ from MainUIClass.config import ip, apiKey
 import requests
 import mainGUI
 from logger import *
+from logger import log_error
 
 class firmwareUpdatePage(mainGUI.Ui_MainWindow):
     isFirmwareUpdateInProgress = False

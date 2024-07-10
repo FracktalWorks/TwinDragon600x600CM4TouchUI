@@ -2,7 +2,7 @@ from octoprintAPI import octoprintAPI
 import dialog
 import mainGUI
 from logger import *
-from MainUIClass.MainUIClasses.controlScreen import controlScreen
+from logger import log_error
 
 class printRestore(mainGUI.Ui_MainWindow):
     def __init__(self):

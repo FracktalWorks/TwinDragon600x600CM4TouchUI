@@ -5,6 +5,7 @@ import mainGUI
 from logger import *
 from dialog import WarningOk
 import dialog
+from logger import log_error
 
 class filamentSensor(mainGUI.Ui_MainWindow):
     def __init__(self):

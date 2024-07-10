@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from logger import *
+from logger import log_info, log_error, log_debug
 from MainUIClass.config import Development, ip, apiKey
 from octoprintAPI import octoprintAPI
 import subprocess
@@ -68,7 +68,7 @@ class ThreadSanityCheck(QtCore.QThread):
                 except Exception as e:
                     time.sleep(1)
                     uptime = uptime + 1
-                    print("Not Connected!")
+                    print("Not Connected! Exception: " + str(e))
             if not self.shutdown_flag:
                 self.loaded_signal.emit()
         except Exception as e:

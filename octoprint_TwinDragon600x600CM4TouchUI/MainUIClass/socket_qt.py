@@ -168,7 +168,7 @@ class QtWebsocket(QtCore.QThread):
                            if item.startswith('!!') or item.startswith('Error'):
                            # If none of the items to ignore were found in 'item'
                             self.printer_error_signal.emit(item)
-                            print(item)
+                            # print(item)
                     #items_to_ignore_pattern = re.compile(r'^(?!ok$|!! Printer is not ready$|!! Move out of range:$ ).*|^Error.*')
                     # items_to_ignore_pattern = re.compile(r'(^Error)|(^!! Printer is not ready$)|(^!! Move out of range: .*$)|(ok)|(echo: )')
                     # if not items_to_ignore_pattern.search(item):
@@ -221,7 +221,7 @@ class QtWebsocket(QtCore.QThread):
     def on_open(self,ws):
         self.authenticate()
         self.heartbeat_checker.start()
-        raise Exception("Exception raised manually after starting heart beat checker thread")
+        # raise Exception("Exception raised manually after starting heart beat checker thread")
 
 
     def on_close(self, ws):
@@ -255,8 +255,6 @@ class HeartbeatChecker(threading.Thread):
                         print("No heartbeat received for 60 seconds. Reestablishing connection.")
                         self.ws.reconnect()
                     
-                    else:
-                        print(f"Heartbeat received at {time.ctime(time.time())}, Time difference: {time_since_last_heartbeat} seconds")
                 time.sleep(5)  # Check every 5 seconds
         except Exception as e:
             error_message = f"Error in Heart beat checker: {str(e)}"
