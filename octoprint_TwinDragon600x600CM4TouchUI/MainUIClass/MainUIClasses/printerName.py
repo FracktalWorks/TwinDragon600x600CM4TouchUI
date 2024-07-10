@@ -23,13 +23,13 @@ class printerName(mainGUI.Ui_MainWindow):
         log_info("Starting printer name init.")
         log_debug("Printer name self parameter passed: " + str(self))
         try:
+            super().__init__()
             self.initialisePrinterNameJson()
         except Exception as e:
             error_message = "Error initializing printerName JSON: " + str(e)
             log_error(error_message)
             if dialog.WarningOk(self, error_message, overlay=True):
                 pass
-        super().__init__()
 
     def setup(self):
         try:

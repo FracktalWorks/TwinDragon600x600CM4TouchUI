@@ -25,13 +25,15 @@ from MainUIClass.MainUIClasses.doorLock import doorLock
 from MainUIClass.MainUIClasses.idexConfig import idexConfig
 # from MainUIClass.MainUIClasses.lockSettings import lockSettings
 from MainUIClass.config import _fromUtf8, getCalibrationPosition, getTool0PurgePosition, getTool1PurgePosition, getPtfeTubeLength, Development
+from MainUIClass.MainUIClasses.dialog_methods import askAndReboot
 import logging
 from MainUIClass.socket_qt import QtWebsocket
-from logger import *
+from logger import log_info, log_error, log_debug, log_warning, log_critical
 import dialog
 import os
 import subprocess
 import glob
+import json
 
 class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName, changeFilamentRoutine, controlScreen, displaySettings, filamentSensor, firmwareUpdatePage, getFilesAndInfo, homePage, menuPage, printLocationScreen, printRestore, settingsPage, softwareUpdatePage, calibrationPage, networking, lineEdits, socketConnections):
     
@@ -196,7 +198,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             self.OTAButton.setDisabled(True)
             self.versionButton.setDisabled(True)
 
-            self.restartButton.pressed.connect(self.askAndReboot)
+            self.restartButton.pressed.connect(lambda: askAndReboot(self))
             self.restoreFactoryDefaultsButton.pressed.connect(self.restoreFactoryDefaults)
             self.restorePrintSettingsButton.pressed.connect(self.restorePrintDefaults)
 
@@ -357,7 +359,10 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             #     return
             
             log_info("octopiclient at response = self.octopiclient.isFailureDetected(): " + str(self.octopiclient))
+            # print("before calling")
             response = self.octopiclient.isFailureDetected()
+            # print("after calling")
+            # print(json.dumps(response, indent=4))
             if response["canRestore"] is True:
                 # log_debug("response['canRestore'] is True")
                 self.printRestoreMessageBox(response["file"])
@@ -368,6 +373,7 @@ class MainUIClass(QMainWindow, activeExtruder, doorLock, idexConfig, printerName
             log_info("Exiting on server connected.")
 
         except Exception as e:
+            # print(e)
             log_error(f"Error during onServerConnected in MainUIClass: {str(e)}")
             if dialog.WarningOk(self, f"Error during onServerConnected in MainUIClass: {str(e)}"):
                 pass
