@@ -3353,7 +3353,7 @@ class Ui_MainWindow(object):
 "    outline: none;\n"
 "}")
         icon18 = QtGui.QIcon()
-        icon18.addPixmap(QtGui.QPixmap("./../../../../Downloads/Input Shaper.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon18.addPixmap(QtGui.QPixmap("./templates/img/Input Shaper.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.inputShaperCalibrateButton.setIcon(icon18)
         self.inputShaperCalibrateButton.setIconSize(QtCore.QSize(70, 70))
         self.inputShaperCalibrateButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
@@ -9023,8 +9023,8 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.mainApplication)
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(28)
-        self.controlTabWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(14)
+        self.controlTabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -9180,7 +9180,7 @@ class Ui_MainWindow(object):
         self.idexConfigStep2NextButton.setText(_translate("MainWindow", "Next"))
         self.idexConfigStep2CancelButton.setText(_translate("MainWindow", "Cancel"))
         self.calibrateLabel_9.setText(_translate("MainWindow", "Level the Bed"))
-        self.calibrateLabel_15.setText(_translate("MainWindow", "Tighten the front left screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage"))
+        self.calibrateLabel_15.setText(_translate("MainWindow", "Tighten the front right screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage"))
         self.calibrateLabel_11.setText(_translate("MainWindow", "Level the Bed"))
         self.idexConfigStep3NextButton.setText(_translate("MainWindow", "Next"))
         self.calibrateLabel_16.setText(_translate("MainWindow", "Tighten the front right screw, and measure the height with the help of an A4 sheet of Paper as a measuring guage"))
