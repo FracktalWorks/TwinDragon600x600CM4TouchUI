@@ -2072,7 +2072,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>785</width>
+         <width>263</width>
          <height>900</height>
         </rect>
        </property>
@@ -5813,7 +5813,8 @@ QToolButton:focus {
 }</string>
       </property>
       <property name="text">
-       <string>Input Shaper</string>
+       <string>Resonance 
+Calibration</string>
       </property>
       <property name="icon">
        <iconset>

@@ -1055,7 +1055,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 785, 900))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 263, 900))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(0, 0, 3, 0)
@@ -9128,7 +9128,8 @@ class Ui_MainWindow(object):
         self.toolOffsetZButton.setText(_translate("MainWindow", "Tool Offsets Z"))
         self.testPrintsButton.setText(_translate("MainWindow", "Test Prints"))
         self.idexCalibrationWizardButton.setText(_translate("MainWindow", "IDEX Config"))
-        self.inputShaperCalibrateButton.setText(_translate("MainWindow", "Input Shaper"))
+        self.inputShaperCalibrateButton.setText(_translate("MainWindow", "Resonance \n"
+"Calibration"))
         self.calibrateLabel_36.setText(_translate("MainWindow", "Calibration and Test Prints :"))
         self.calibrateLabel_57.setText(_translate("MainWindow", "Ensure PLA material of different colors are loaded into both nozzles before continuing "))
         self.calibrateLabel_58.setText(_translate("MainWindow", "Select Installed Nozzles Diameter\'s:"))
