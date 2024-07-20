@@ -50,38 +50,11 @@ import base64
 
 # TODO:
 '''
-# Remove SD card capability from octoprint settings
-# Should add error/status checking in the response in some functions in the octoprintAPI
-# session keys??
-# printer status should show errors from printer.
-# async requests
-# http://eli.thegreenplace.net/2011/04/25/passing-extra-arguments-to-pyqt-slot
-# fix wifi
-# status bar netweorking and wifi stuff
-# reconnect to printer using GUI
-# check if disk is getting full
-# recheck for internet being conneted, refresh button
-# load filaments from a file
-# store settings to a file
-# change the way active extruder print stores the current active extruder using positionEvent
-#settings should show the current wifi
-#clean up keyboard nameing
-#add asertions and exeptions
-#disaable done button if empty
-#oncancel change filament cooldown
-#toggle temperature indipendant of motion
-#get active extruder from motion controller. when pausing, note down and resume with active extruder
-#QR code has dictionary with IP address also
-Testing:
-# handle nothing selected in file select menus when deleting and printing etc.
-# Delete items from local and USB
-# different file list pages for local and USB
-# test USB/Local properly
-# check for uploading error when uploading from USB
-# Test if active extruder goes back after pausing
-# TRy to fuck with printing process from GUI
-# PNG Handaling
-# dissable buttons while printing
+# Error Handaling
+# Logging UI errors to Octoprint Log
+# Configuration File Seperation
+# Add new Klipper Configuraion
+
 '''
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -344,7 +317,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.setHomeOffsetBool = False
             self.currentImage = None
             self.currentFile = None
-            self.tpuflag = False
             # if not Development:
             #     self.sanityCheck = ThreadSanityCheck(self._logger, virtual=not self.__timelapse_enabled)
             # else:
@@ -1437,10 +1409,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.setToolTemperature({"tool1": filaments[str(
                 self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
                 {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
-        if self.changeFilamentComboBox.currentText() == "TPU":
-            self.tpuflag = True
-        else:
-            self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Unloading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1461,10 +1429,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.setToolTemperature({"tool1": filaments[str(
                 self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
                 {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
-        if self.changeFilamentComboBox.currentText() == "TPU":
-            self.tpuflag = True
-        else:
-            self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Loading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1500,7 +1464,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 break
 
         while self.stackedWidget.currentWidget() == self.changeFilamentExtrudePage:
-            if self.tpuflag:
+            if self.changeFilamentComboBox.currentText() == "TPU":
                 octopiclient.gcode("G91")
                 octopiclient.gcode("G1 E20 F300")
                 octopiclient.gcode("G90")
@@ -1517,7 +1481,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
         # Tip Shaping to prevent filament jamming in nozzle
-        if self.tpuflag:
+        if self.changeFilamentComboBox.currentText() == "TPU":
             octopiclient.gcode("G91")
             octopiclient.gcode("G1 E10 F300")
             time.sleep(self.calcExtrudeTime(10, 300))
@@ -1962,15 +1926,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.setActiveExtruder(1)
             octopiclient.selectTool(1)
             time.sleep(1)
-            if self.printerStatusText == "Paused":
-                octopiclient.jog(x=648, y=-108, absolute=True, speed=2000)
 
         else:
             self.setActiveExtruder(0)
             octopiclient.selectTool(0)
             time.sleep(1)
-            if self.printerStatusText == "Paused":
-                octopiclient.jog(x=-27, y=-108, absolute=True, speed=2000)
 
 
     def selectToolMotion(self):
@@ -2024,7 +1984,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++Control Screen+++++++++++++++++++++++++++++++ '''
 
     def control(self):
-        self.tpuflag = False
         self.stackedWidget.setCurrentWidget(self.controlPage)
         if self.toolToggleTemperatureButton.isChecked():
             self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
