@@ -2731,31 +2731,17 @@ class QtWebsocket(QtCore.QThread):
                         # "N",
                         # "echo: "
                     ]
-                    # if item.startswith('!!') or (item.startswith('Error') and not item.startswith('!! Printer is not ready')):
-                    #     self.printer_error_signal.emit(item)
-                    #     print(item)
-                    if item.strip():
-                        for ignore_item in items_to_ignore:
-                           if ignore_item in item:
-                               print("ignored ->" + ignore_item)
-                               # Ignore this item
-                               break
-                        else:
-                           if item.startswith('!!') or item.startswith('Error'):
-                           # If none of the items to ignore were found in 'item'
-                            self.printer_error_signal.emit(item)
-                            print(item)
-                    #items_to_ignore_pattern = re.compile(r'^(?!ok$|!! Printer is not ready$|!! Move out of range:$ ).*|^Error.*')
-                    # items_to_ignore_pattern = re.compile(r'(^Error)|(^!! Printer is not ready$)|(^!! Move out of range: .*$)|(ok)|(echo: )')
-                    # if not items_to_ignore_pattern.search(item):
-                    #     self.printer_error_signal.emit(item)
-                    #     print('Called ->'+ item + '<-')
+                    for ignore_item in items_to_ignore:
+                       if ignore_item in item:
+                           print("ignored ->" + ignore_item)
+                           # Ignore this item
+                           break
+                    else:
+                       if item.startswith('!!') or item.startswith('Error'):
+                       # If none of the items to ignore were found in 'item'
+                        self.printer_error_signal.emit(item)
+                        print(item)
 
-                    #items_to_ignore = ['!! Printer is not ready', '!! Move out of range:']
-                    #if item.startswith('!!') or (item.startswith('Error') and item not in items_to_ignore):
-                    #    self.printer_error_signal.emit(item)
-                    #if item.startswith('!!') or item.startswith('Error'):
-                    #    self.printer_error_signal.emit(item)
             if data["current"]["state"]["text"]:
                 self.status_signal.emit(data["current"]["state"]["text"])
 
