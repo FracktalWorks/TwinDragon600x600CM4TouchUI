@@ -17,7 +17,6 @@ import mainGUI
 import keyboard
 import dialog
 import styles
-import asset_bundle
 import glob
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -25,7 +24,7 @@ import time
 import sys
 import subprocess
 from octoprintAPI import octoprintAPI
-from hurry.filesize import size
+from hurry.filesize.filesize import size
 from datetime import datetime
 # from functools import partial
 import qrcode
@@ -39,7 +38,6 @@ import os
 import io
 import requests
 import re
-import logging
 from collections import OrderedDict
 import base64
 import threading
@@ -120,9 +118,9 @@ except AttributeError:
 
 
 def run_async(func):
-    '''
+    """
     Function decorater to make methods run in a thread
-    '''
+    """
     from threading import Thread
     from functools import wraps
 
@@ -145,7 +143,7 @@ def getIP(interface):
         rInet6Addr = r"inet6"
         mt6Ip = re.search(rInet6Addr, scan_result)
         mtIp = re.search(rInetAddr, scan_result)
-        if not(mt6Ip) and mtIp and len(mtIp.groups()) == 1:
+        if not mt6Ip and mtIp and len(mtIp.groups()) == 1:
             return str(mtIp.group(1))
     except Exception as e:
         logger.error("Error in getIP: {}".format(e))
@@ -237,9 +235,9 @@ class Image(qrcode.image.base.BaseImage):
         self.border = border
         self.width = width
         self.box_size = box_size
-        size = (width + border * 2) * box_size
+        _size = (width + border * 2) * box_size
         self._image = QtGui.QImage(
-            size, size, QtGui.QImage.Format_RGB16)
+            _size, _size, QtGui.QImage.Format_RGB16)
         self._image.fill(QtCore.Qt.white)
 
     def pixmap(self):
@@ -266,10 +264,10 @@ class ClickableLineEdit(QtWidgets.QLineEdit):
 
 
 class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
-    '''
+    """
     Main GUI Workhorse, all slots and events defined within
     The main implementation class that inherits methods, variables etc from mainGUI_pro_dual_abl.py and QMainWindow
-    '''
+    """
     def __init__(self):
         """
         This method gets called when an object of type MainUIClass is defined
@@ -459,7 +457,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.toggleFilamentSensorButton.setDisabled(True)
         except Exception as e:
             logger.error("Error in MainUiClass.safeProceed: {}".format(e))
-            dialog.WarniWarningOkngYesNo(self, "Error in MainUiClass.safeProceed: {}".format(e), overlay=True)
+            dialog.WarningOk(self, "Error in MainUiClass.safeProceed: {}".format(e), overlay=True)
 
 
     def handleStartupError(self):
@@ -468,7 +466,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.handleStartupError started")
         try:
-            if dialog.WarningYesNo(self,  "Server Error, Restore failsafe settings?", overlay=True):
+            if dialog.WarningYesNo(self, "Server Error, Restore failsafe settings?", overlay=True):
                 os.system('sudo rm -rf /home/pi/.octoprint/users.yaml')
                 os.system('sudo rm -rf /home/pi/.octoprint/config.yaml')
                 os.system('sudo cp -f config/users.yaml /home/pi/.octoprint/users.yaml')
@@ -782,9 +780,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             if dialog.WarningYesNo(self, file + " Did not finish, would you like to restore?"):
                 response = octopiclient.restore(restore=True)
                 if response["status"] == "Successfully Restored":
-                    dialog.WarningOk(response["status"])
+                    dialog.WarningOk(self, response["status"])
                 else:
-                    dialog.WarningOk(response["status"])
+                    dialog.WarningOk(self, response["status"])
         except Exception as e:
             logger.error("Error in MainUiClass.printRestoreMessageBox: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.printRestoreMessageBox: {}".format(e), overlay=True)
@@ -1312,10 +1310,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.wifiSettings: {}".format(e), overlay=True)
 
     def scan_wifi(self):
-        '''
+        """
         uses linux shell and WIFI interface to scan available networks
         :return: dictionary of the SSID and the signal strength
-        '''
+        """
         logger.info("MainUiClass.scan_wifi started")
         try:
             # scanData = {}
@@ -1335,9 +1333,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     @run_async
     def setIPStatus(self):
-        '''
+        """
         Function to update IP address of printer on the status bar. Refreshes at a particular interval.
-        '''
+        """
         try:
             while(True):
                 try:
@@ -1561,12 +1559,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++Change Filament+++++++++++++++++++++++++++++++ '''
 
     def calcExtrudeTime(self, length, speed):
-        '''
+        """
         Calculate the time it takes to extrude a certain length of filament at a certain speed
         :param length: length of filament to extrude
         :param speed: speed at which to extrude
         :return: time in seconds
-        '''
+        """
         return length / (speed/60)
 
     def unloadFilament(self):
@@ -1624,9 +1622,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     @run_async
     def changeFilamentLoadFunction(self):
-        '''
+        """
         This function is called once the heating is done, which slowly moves the extruder so that it starts pulling filament
-        '''
+        """
         logger.info("MainUiClass.changeFilamentLoadFunction started")
         try:
             self.stackedWidget.setCurrentWidget(self.changeFilamentLoadPage)
@@ -1641,9 +1639,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     @run_async
     def changeFilamentExtrudePageFunction(self):
-        '''
+        """
         once filament is loaded, this function is called to extrude filament till the toolhead
-        '''
+        """
         logger.info("MainUiClass.changeFilamentExtrudePageFunction started")
         try:
             self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
@@ -1671,9 +1669,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.changeFilamentExtrudePageFunction: {}".format(e), overlay=True)
     @run_async
     def changeFilamentRetractFunction(self):
-        '''
+        """
         Remove the filament from the toolhead
-        '''
+        """
         logger.info("MainUiClass.changeFilamentRetractFunction started")
         try:
             self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
@@ -1750,9 +1748,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++Job Operations+++++++++++++++++++++++++++++++ '''
 
     def stopActionMessageBox(self):
-        '''
+        """
         Displays a message box asking if the user is sure if he wants to turn off the print
-        '''
+        """
         logger.info("MainUiClass.stopActionMessageBox started")
         try:
             if dialog.WarningYesNo(self, "Are you sure you want to stop the print?"):
@@ -1762,9 +1760,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.stopActionMessageBox: {}".format(e), overlay=True)
 
     def playPauseAction(self):
-        '''
+        """
         Toggles Play/Pause of a print depending on the status of the print
-        '''
+        """
         logger.info("MainUiClass.playPauseAction started")
         try:
             if self.printerStatusText == "Operational":
@@ -1780,10 +1778,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.playPauseAction: {}".format(e), overlay=True)
 
     def fileListLocal(self):
-        '''
+        """
         Gets the file list from octoprint server, displays it on the list, as well as
         sets the stacked widget page to the file list page
-        '''
+        """
         logger.info("MainUiClass.fileListLocal started")
         try:
             self.stackedWidget.setCurrentWidget(self.fileListLocalPage)
@@ -1803,11 +1801,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.fileListLocal: {}".format(e), overlay=True)
 
     def fileListUSB(self):
-        '''
+        """
         Gets the file list from octoprint server, displays it on the list, as well as
         sets the stacked widget page to the file list page
         ToDO: Add deapth of folders recursively get all gcodes
-        '''
+        """
         logger.info("MainUiClass.fileListUSB started")
         try:
             self.stackedWidget.setCurrentWidget(self.fileListUSBPage)
@@ -1826,11 +1824,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def printSelectedLocal(self):
 
-        '''
+        """
         gets information about the selected file from octoprint server,
         as well as sets the current page to the print selected page.
         This function also selects the file to print from octoprint
-        '''
+        """
         logger.info("MainUiClass.printSelectedLocal started")
         try:
             self.fileSelected.setText(self.fileListWidget.currentItem().text())
@@ -1877,10 +1875,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def printSelectedUSB(self):
-        '''
+        """
         Sets the screen to the print selected screen for USB, on which you can transfer to local drive and view preview image.
         :return:
-        '''
+        """
         logger.info("MainUiClass.printSelectedUSB started")
         try:
             self.fileSelectedUSBName.setText(self.fileListWidgetUSB.currentItem().text())
@@ -1893,10 +1891,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             # Set Image from USB
 
     def transferToLocal(self, prnt=False):
-        '''
+        """
         Transfers a file from USB mounted at /media/usb0 to octoprint's watched folder so that it gets automatically detected bu Octoprint.
         Warning: If the file is read-only, octoprint API for reading the file crashes.
-        '''
+        """
         logger.info("MainUiClass.transferToLocal started")
         try:
             file = '/media/usb0/' + str(self.fileListWidgetUSB.currentItem().text())
@@ -1910,9 +1908,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.transferToLocal: {}".format(e), overlay=True)
 
     def printFile(self):
-        '''
+        """
         Prints the file selected from printSelected()
-        '''
+        """
         logger.info("MainUiClass.printFile started")
         try:
             octopiclient.home(['x', 'y', 'z'])
@@ -1925,9 +1923,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def deleteItem(self):
-        '''
+        """
         Deletes a gcode file, and if associates, its image file from the memory
-        '''
+        """
         logger.info("MainUiClass.deleteItem started")
         try:
             octopiclient.deleteFile(self.fileListWidget.currentItem().text())
@@ -1940,9 +1938,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def getImageFromGcode(self,gcodeLocation):
-        '''
+        """
         Gets the image from the gcode text file
-        '''
+        """
         logger.info("MainUiClass.getImageFromGcode started")
         try:
             with open(gcodeLocation, 'rb') as f:
@@ -1963,11 +1961,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     @run_async
     def displayThumbnail(self,labelObject,fileLocation, usb=False):
-        '''
+        """
         Displays the image on the label object
         :param labelObject: QLabel object to display the image
-        :param img: image to display
-        '''
+        :param fileLocation: location of the file
+        :param usb: if the file is from
+        """
         logger.info("MainUiClass.displayThumbnail started")
         try:
             pixmap = QtGui.QPixmap()
@@ -1987,11 +1986,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++Printer Status+++++++++++++++++++++++++++++++ '''
 
     def updateTemperature(self, temperature):
-        '''
+        """
         Slot that gets a signal originating from the thread that keeps polling for printer status
         runs at 1HZ, so do things that need to be constantly updated only. This also controls the cooling fan depending on the temperatures
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
-        '''
+        """
         logger.info("MainUiClass.updateTemperature started")
         try:
             try:
@@ -2075,11 +2074,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.updateTemperature: {}".format(e), overlay=True)
 
     def updatePrintStatus(self, file):
-        '''
+        """
         displays infromation of a particular file on the home page,is a slot for the signal emited from the thread that keeps pooling for printer status
         runs at 1HZ, so do things that need to be constantly updated only
         :param file: dict of all the attributes of a particualr file
-        '''
+        """
 
         logger.info("MainUiClass.updatePrintStatus started")
         try:
@@ -2129,11 +2128,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.updatePrintStatus: {}".format(e), overlay=True)
 
     def updateStatus(self, status):
-        '''
+        """
         Updates the status bar, is a slot for the signal emited from the thread that constantly polls for printer status
         this function updates the status bar, as well as enables/disables relavent buttons
         :param status: String of the status text
-        '''
+        """
         logger.info("MainUiClass.updateStatus started")
         try:
             self.printerStatusText = status
@@ -2188,9 +2187,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' ++++++++++++++++++++++++++++Active Extruder/Tool Change++++++++++++++++++++++++ '''
 
     def selectToolChangeFilament(self):
-        '''
+        """
         Selects the tool whose temperature needs to be changed. It accordingly changes the button text. it also updates the status of the other toggle buttons
-        '''
+        """
         logger.info("MainUiClass.selectToolChangeFilament started")
         try:
             if self.toolToggleChangeFilamentButton.isChecked():
@@ -2208,9 +2207,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def selectToolMotion(self):
-        '''
+        """
         Selects the tool whose temperature needs to be changed. It accordingly changes the button text. it also updates the status of the other toggle buttons
-        '''
+        """
         logger.info("MainUiClass.selectToolMotion started")
         try:
             if self.toolToggleMotionButton.isChecked():
@@ -2225,9 +2224,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.selectToolMotion: {}".format(e), overlay=True)
 
     def selectToolTemperature(self):
-        '''
+        """
         Selects the tool whose temperature needs to be changed. It accordingly changes the button text.it also updates the status of the other toggle buttons
-        '''
+        """
         logger.info("MainUiClass.selectToolTemperature started")
         try:
             # self.toolToggleTemperatureButton.setText(
@@ -2291,11 +2290,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.control: {}".format(e), overlay=True)
 
     def setStep(self, stepRate):
-        '''
+        """
         Sets the class variable "Step" which would be needed for movement and joging
-        :param step: step multiplier for movement in the move
+        :param stepRate: step multiplier for movement in the move
         :return: nothing
-        '''
+        """
         logger.info("MainUiClass.setStep started")
         try:
             if stepRate == 100:
@@ -2363,9 +2362,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.preheatBedTemp: {}".format(e), overlay=True)
 
     def coolDownAction(self):
-        ''''
+        """'
         Turns all heaters and fans off
-        '''
+        """
         logger.info("MainUiClass.coolDownAction started")
         try:
             octopiclient.gcode(command='M107')
@@ -2380,15 +2379,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     ''' +++++++++++++++++++++++++++++++++++Calibration++++++++++++++++++++++++++++++++ '''
     def setZToolOffset(self, offset):
-        '''
+        """
         Sets the home offset after the caliberation wizard is done, which is a callback to
         the response of M114 that is sent at the end of the Wizard in doneStep()
         :param offset: the value off the offset to set. is a str is coming from M114, and is float if coming from the nozzleOffsetPage
-        :param setOffset: Boolean, is true if the function call is from the nozzleOFfsetPage
         :return:
 
         #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
-        '''
+        """
         logger.info("MainUiClass.setZToolOffset started")
         self.currentZPosition = offset #gets the current z position, used to set new tool offsets.
         try:
@@ -2426,12 +2424,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.showPrinterError: {}".format(e), overlay=True)
 
     def updateEEPROMProbeOffset(self, offset):
-        '''
+        """
         Sets the spinbox value to have the value of the Z offset from the printer.
         the value is -ve so as to be more intuitive.
         :param offset:
         :return:
-        '''
+        """
         logger.info("MainUiClass.updateEEPROMProbeOffset started")
         try:
             self.currentNozzleOffset.setText(str(float(offset)))
@@ -2442,11 +2440,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def setZProbeOffset(self, offset):
-        '''
+        """
         Sets Z Probe offset from spinbox
 
         #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
-        '''
+        """
         logger.info("MainUiClass.setZProbeOffset started")
         try:
             octopiclient.gcode(command='M851 Z{}'.format(round(float(offset),2))) #M851 only ajusts nozzle offset
@@ -2459,10 +2457,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.setZProbeOffset: {}".format(e), overlay=True)
 
     def requestEEPROMProbeOffset(self):
-        '''
+        """
         Updates the value of M206 Z in the nozzle offset spinbox. Sends M503 so that the pritner returns the value as a websocket calback
         :return:
-        '''
+        """
         logger.info("MainUiClass.requestEEPROMProbeOffset started")
         try:
             octopiclient.gcode(command='M503')
@@ -2472,10 +2470,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.requestEEPROMProbeOffset: {}".format(e), overlay=True)
 
     def nozzleOffset(self):
-        '''
+        """
         Updates the value of M206 Z in the nozzle offset spinbox. Sends M503 so that the pritner returns the value as a websocket calback
         :return:
-        '''
+        """
         logger.info("MainUiClass.nozzleOffset started")
         try:
             octopiclient.gcode(command='M503')
@@ -2546,12 +2544,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.getToolOffset: {}".format(e), overlay=True)
 
     def quickStep1(self):
-        '''
+        """
         Shows welcome message.
         Homes to MAX
         goes to position where leveling screws can be opened
         :return:
-        '''
+        """
         logger.info("MainUiClass.quickStep1 started")
         try:
             self.toolZOffsetCaliberationPageCount = 0
@@ -2569,10 +2567,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.quickStep1: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.quickStep1: {}".format(e), overlay=True)
     def quickStep2(self):
-        '''
+        """
         levels first position (RIGHT)
         :return:
-        '''
+        """
         logger.info("MainUiClass.quickStep2 started")
         try:
             self.stackedWidget.setCurrentWidget(self.quickStep2Page)
@@ -2590,9 +2588,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def quickStep3(self):
-        '''
+        """
         levels second leveling position (LEFT)
-        '''
+        """
         logger.info("MainUiClass.quickStep3 started")
         try:
             self.stackedWidget.setCurrentWidget(self.quickStep3Page)
@@ -2613,10 +2611,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def quickStep4(self):
-        '''
+        """
         levels third leveling position  (BACK)
         :return:
-        '''
+        """
         logger.info("MainUiClass.quickStep4 started")
         try:
             # sent twice for some reason
@@ -2669,10 +2667,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def doneStep(self):
-        '''
+        """
         Exits leveling
         :return:
-        '''
+        """
         logger.info("MainUiClass.doneStep started")
         try:
             self.setNewToolZOffsetFromCurrentZBool = True
@@ -2722,14 +2720,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     
     def testPrint(self,tool0Diameter,tool1Diameter,gcode):
-        '''
+        """
         Prints a test print
         :param tool0Diameter: Diameter of tool 0 nozzle.04,06 or 08
         :param tool1Diameter: Diameter of tool 1 nozzle.40,06 or 08
         :param gcode: type of gcode to print, dual nozzle calibration, bed leveling, movement or samaple prints in
         single and dual. bedLevel, dualCalibration, movementTest, dualTest, singleTest
         :return:
-        '''
+        """
         logger.info("MainUiClass.testPrint started")
         try:
             if gcode is 'bedLevel':
@@ -2753,10 +2751,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.testPrint: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.testPrint: {}".format(e), overlay=True)
     def printFromPath(self,path,prnt=True):
-        '''
+        """
         Transfers a file from a specific to octoprint's watched folder so that it gets automatically detected by Octoprint.
         Warning: If the file is read-only, octoprint API for reading the file crashes.
-        '''
+        """
         logger.info("MainUiClass.printFromPath started")
         try:
             self.uploadThread = ThreadFileUpload(path, prnt=prnt)
@@ -2772,11 +2770,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def idexConfigStep1(self):
-        '''
+        """
         Shows welcome message.
         Welcome Page, Give Info. Unlock nozzle and push down
         :return:
-        '''
+        """
         logger.info("MainUiClass.idexConfigStep1 started")
         try:
             octopiclient.gcode(command='M503')  # Gets old tool offset position
@@ -2800,10 +2798,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def idexConfigStep2(self):
-        '''
+        """
         levels first position (RIGHT)
         :return:
-        '''
+        """
         logger.info("MainUiClass.idexConfigStep2 started")
         try:
             self.stackedWidget.setCurrentWidget(self.idexConfigStep2Page)
@@ -2824,9 +2822,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def idexConfigStep3(self):
-        '''
+        """
         levels second leveling position (LEFT)
-        '''
+        """
         logger.info("MainUiClass.idexConfigStep3 started")
         try:
             self.stackedWidget.setCurrentWidget(self.idexConfigStep3Page)
@@ -2847,10 +2845,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def idexConfigStep4(self):
-        '''
+        """
         Set to Mirror mode and asks to loosen the carriage, push both doen to max
         :return:
-        '''
+        """
         logger.info("MainUiClass.idexConfigStep4 started")
         try:
             self.stackedWidget.setCurrentWidget(self.idexConfigStep4Page)
@@ -2872,10 +2870,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def idexConfigStep5(self):
-        '''
+        """
         take bed up until both nozzles touch the bed. ASk to take nozzle up and down till nozzle just rests on the bed and tighten
         :return:
-        '''
+        """
         logger.info("MainUiClass.idexConfigStep5 started")
         try:
             self.stackedWidget.setCurrentWidget(self.idexConfigStep5Page)
@@ -2896,10 +2894,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def idexDoneStep(self):
-        '''
+        """
         Exits leveling
         :return:
-        '''
+        """
         logger.info("MainUiClass.idexDoneStep started")
         try:
             octopiclient.jog(z=4, absolute=True, speed=1500)
@@ -2948,9 +2946,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     ''' +++++++++++++++++++++++++++++++++++Keyboard++++++++++++++++++++++++++++++++ '''
 
     def startKeyboard(self, returnFn, onlyNumeric=False, noSpace=False, text=""):
-        '''
+        """
         starts the keyboard screen for entering Password
-        '''
+        """
         logger.info("MainUiClass.startKeyboard started")
         try:
             keyBoardobj = keyboard.Keyboard(onlyNumeric=onlyNumeric, noSpace=noSpace, text=text)
@@ -3017,9 +3015,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         return False
 
     def checkKlipperPrinterCFG(self):
-        '''
+        """
         Checks for valid printer.cfg and restores if needed
-        '''
+        """
 
         # Open the printer.cfg file:
         logger.info("MainUiClass.checkKlipperPrinterCFG started")
@@ -3088,12 +3086,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.pairPhoneApp: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.pairPhoneApp: {}".format(e), overlay=True)
 
-import threading
 class QtWebsocket(QtCore.QThread):
-    '''
+    """
     https://pypi.python.org/pypi/websocket-client
     https://wiki.python.org/moin/PyQt/Threading,_Signals_and_Slots
-    '''
+    """
 
     z_home_offset_signal = QtCore.pyqtSignal(str)
     temperatures_signal = QtCore.pyqtSignal(dict)
@@ -3337,9 +3334,6 @@ class QtWebsocket(QtCore.QThread):
                         pass
         except Exception as e:
             logger.error("Error in QtWebsocket.process: {}".format(e))
-
-
-
 #
 class ThreadSanityCheck(QtCore.QThread):
 
@@ -3436,10 +3430,10 @@ class ThreadRestartNetworking(QtCore.QThread):
             self.signal.emit(None)
 
     def restart_interface(self):
-        '''
+        """
         restars wlan0 wireless interface to use new changes in wpa_supplicant.conf file
         :return:
-        '''
+        """
         if self.interface == "wlan0":
             subprocess.call(["wpa_cli","-i",  self.interface, "reconfigure"], shell=False)
         if self.interface == "eth0":
