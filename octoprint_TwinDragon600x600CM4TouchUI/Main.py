@@ -134,7 +134,6 @@ def run_async(func):
 
 
 def getIP(interface):
-    logger.info("Getting IP for interface: {}".format(interface))
     try:
         scan_result = \
             (subprocess.Popen("ifconfig | grep " + interface + " -A 1", stdout=subprocess.PIPE, shell=True).communicate()[0]).decode("utf-8")
@@ -467,6 +466,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.handleStartupError started")
         try:
             if dialog.WarningYesNo(self, "Server Error, Restore failsafe settings?", overlay=True):
+                logger.info("Restoring Failsafe Settings")
                 os.system('sudo rm -rf /home/pi/.octoprint/users.yaml')
                 os.system('sudo rm -rf /home/pi/.octoprint/config.yaml')
                 os.system('sudo cp -f config/users.yaml /home/pi/.octoprint/users.yaml')
@@ -474,6 +474,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 subprocess.call(["sudo", "systemctl", "restart", "octoprint"])
                 self.sanityCheck.start()
             else:
+                logger.info("User chose not to restore failsafe settings, going to safeProcees()")
                 self.safeProceed()
         except Exception as e:
             logger.error("Error in MainUiClass.handleStartupError: {}".format(e))
@@ -618,7 +619,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.dualNozzlePrintButton.pressed.connect(
                 lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
                                        str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'singleTest'))
-    
+            #~ Input Shaping~#
+            self.inputShaperCalibrateButton.pressed.connect(self.inputShaperCalibrate)
+
             # PrintLocationScreen
             self.printLocationScreenBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.fromLocalButton.pressed.connect(self.fileListLocal)
@@ -760,8 +763,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.softwareUpdateBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
             self.performUpdateButton.pressed.connect(lambda: octopiclient.performSoftwareUpdate())
     
-            # Firmware update page
-            self.firmwareUpdateBackButton.pressed.connect(self.firmwareUpdateBack)
+            # # Firmware update page
+            # self.firmwareUpdateBackButton.pressed.connect(self.firmwareUpdateBack)
     
             # Filament sensor toggle
             self.toggleFilamentSensorButton.clicked.connect(self.toggleFilamentSensor)
@@ -1991,7 +1994,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         runs at 1HZ, so do things that need to be constantly updated only. This also controls the cooling fan depending on the temperatures
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
         """
-        logger.info("MainUiClass.updateTemperature started")
         try:
             try:
                 if temperature['tool0Target'] == 0:
@@ -2080,7 +2082,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         :param file: dict of all the attributes of a particualr file
         """
 
-        logger.info("MainUiClass.updatePrintStatus started")
         try:
             if file is None:
                 self.currentFile = None
@@ -2133,7 +2134,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         this function updates the status bar, as well as enables/disables relavent buttons
         :param status: String of the status text
         """
-        logger.info("MainUiClass.updateStatus started")
         try:
             self.printerStatusText = status
             self.printerStatus.setText(status)
@@ -2378,6 +2378,20 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.coolDownAction: {}".format(e), overlay=True)
 
     ''' +++++++++++++++++++++++++++++++++++Calibration++++++++++++++++++++++++++++++++ '''
+
+    def inputShaperCalibrate(self):
+        logger.info("MainUiClass.inputShaperCalibrate started")
+        try:
+            dialog.WarningOk(self, "Wait for all calibration movements to finish before proceeding.", overlay=True)
+            octopiclient.gcode(command='G28')
+            octopiclient.gcode(command='SHAPER_CALIBRATE')
+            octopiclient.gcode(command='SAVE_CONFIG')
+
+        except Exception as e:
+            error_message = f"Error in inptuShaperCalibrate: {str(e)}"
+            logger.error(error_message)
+            dialog.WarningOk(self, error_message, overlay=True)
+
     def setZToolOffset(self, offset):
         """
         Sets the home offset after the caliberation wizard is done, which is a callback to
@@ -3138,7 +3152,6 @@ class QtWebsocket(QtCore.QThread):
         except Exception as e:
             logger.error("Error in QtWebsocket.run: {}".format(e))
     def reset_heartbeat_timer(self):
-        logger.info("QtWebsocket.reset_heartbeat_timer started")
         try:
             if self.heartbeat_timer is not None:
                 self.heartbeat_timer.cancel()
@@ -3164,7 +3177,9 @@ class QtWebsocket(QtCore.QThread):
                                              on_error=self.on_error,
                                              on_close=self.on_close,
                                              on_open=self.on_open)
+            self.authenticate()
             self.start()
+            self.authenticate()
         except Exception as e:
             logger.error("Error in QtWebsocket.reestablish_connection: {}".format(e))
     def send(self, data):
@@ -3229,7 +3244,6 @@ class QtWebsocket(QtCore.QThread):
 
     @run_async
     def process(self, data):
-        logger.info("QtWebsocket.process started")
         try:
             if "event" in data:
                 if data["event"]["type"] == "Connected":
@@ -3289,14 +3303,12 @@ class QtWebsocket(QtCore.QThread):
                             # "echo: "
                         ]:
                            if ignore_item in item:
-                               print("ignored ->" + ignore_item)
                                # Ignore this item
                                break
                         else:
                            if item.startswith('!!') or item.startswith('Error'):
-                           # If none of the items to ignore were found in 'item'
-                            self.printer_error_signal.emit(item)
-                            print(item)
+                               self.printer_error_signal.emit(item)
+                               logger.error("Error From Klipper/Printer: {}".format(item))
 
                 if data["current"]["state"]["text"]:
                     self.status_signal.emit(data["current"]["state"]["text"])

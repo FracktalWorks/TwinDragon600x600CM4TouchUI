@@ -13,7 +13,7 @@ def setup_logger():
 
     # Create a file handler for outputting log messages to a file.
     # Include the current date in the filename.
-    handler = logging.FileHandler('/home/pi/touchUI_{}.log'.format(datetime.now().strftime('%Y_%m_%d')))
+    handler = logging.FileHandler('/home/pi/.octoprint/logs/TouchUI_{}.log'.format(datetime.now().strftime('%Y-%m-%d-%H-%M')))
 
     # Set the level of the file handler. This can be DEBUG, INFO, WARNING, ERROR, or CRITICAL.
     handler.setLevel(logging.DEBUG)
@@ -41,15 +41,15 @@ def setup_logger():
 
     return logger
 
-def delete_old_logs(logs_path='/home/pi/', max_age_days=5):
-    """
-    Deletes all log files in the given directory that are older than `max_age_days` days.
-    """
-    current_time = time.time()
 
-    for file in glob.glob(os.path.join(logs_path, 'touchUI_*.log')):
-        creation_time = os.path.getctime(file)
+def delete_old_logs(logs_path='/home/pi/.octoprint/logs/{}', startsWith='TouchUI_'):
+    """
+    Deletes log files in the given directory that starts with a particular string if the number of
+    files exceeds 5, starting with the oldest.
+    """
+    # Get a list of log files in the directory.
+    log_files = sorted(glob.glob(logs_path.format(startsWith) + '*'), key=os.path.getmtime)
 
-        if (current_time - creation_time) // (24 * 3600) >= max_age_days:
-            os.unlink(file)
-            print('{} removed'.format(file))
+    # Delete the oldest log files if there are more than 5.
+    for log_file in log_files[:-5]:
+        os.remove(log_file)
