@@ -449,8 +449,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.softwareUpdateBackButton.setDisabled(True)
             self.performUpdateButton.setDisabled(True)
 
-            # Firmware update page
-            self.firmwareUpdateBackButton.setDisabled(True)
+            # # Firmware update page
+            # self.firmwareUpdateBackButton.setDisabled(True)
 
             # Filament sensor toggle
             self.toggleFilamentSensorButton.setDisabled(True)
@@ -1738,7 +1738,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.changeFilamentCancel started")
         try:
             self.changeFilamentHeatingFlag = False
-            self.firmwareUpdateCheck()
             if self.printerStatusText not in ["Printing","Paused"]:
                 self.coolDownAction()
             self.control()
@@ -2195,11 +2194,13 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             if self.toolToggleChangeFilamentButton.isChecked():
                 self.setActiveExtruder(1)
                 octopiclient.selectTool(1)
+                octopiclient.jog(tool1PurgePosition['X'],tool1PurgePosition["Y"] ,absolute=True, speed=10000)
                 time.sleep(1)
 
             else:
                 self.setActiveExtruder(0)
                 octopiclient.selectTool(0)
+                octopiclient.jog(tool0PurgePosition['X'],tool0PurgePosition["Y"] ,absolute=True, speed=10000)
                 time.sleep(1)
         except Exception as e:
             logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
@@ -2426,17 +2427,30 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.showProbingFailed: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.showProbingFailed: {}".format(e), overlay=True)
 
-    def showPrinterError(self,msg='Printer error, Check Terminal',overlay=False): #True
+    def showPrinterError(self, msg='Printer error, Check Terminal', overlay=False):
         logger.info("MainUiClass.showPrinterError started")
         try:
-            if dialog.WarningOk(self, msg, overlay=overlay):
-                pass
-                return True
-            return False
+            if any(error in msg for error in
+                   ["Must home axis first", "probe", "Error during homing move", "still triggered after retract", "'mcu' must be specified"]):
+                logger.error("CRITICAL ERROR SHUTDOWN NEEDED")
+                if self.printerStatusText in ["Starting","Printing","Paused"]:
+                    octopiclient.cancelPrint()
+                    octopiclient.gcode(command='M112')
+                    try:
+                        octopiclient.connectPrinter(port="/tmp/printer", baudrate=115200)
+                    except Exception as e:
+                        octopiclient.connectPrinter(port="VIRTUAL", baudrate=115200)
+                    octopiclient.gcode(command='FIRMWARE_RESTART')
+                    octopiclient.gcode(command='RESTART')
+                    dialog.WarningOk(self, msg + ", Cancelling Print.", overlay=overlay)
+                    logger.error("CRITICAL ERROR SHUTDOWN DONE")
+                else:
+                    dialog.WarningOk(self, msg, overlay=overlay)
+            else:
+                dialog.WarningOk(self, msg, overlay=overlay)
         except Exception as e:
             logger.error("Error in MainUiClass.showPrinterError: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.showPrinterError: {}".format(e), overlay=True)
-
     def updateEEPROMProbeOffset(self, offset):
         """
         Sets the spinbox value to have the value of the Z offset from the printer.
@@ -3296,7 +3310,8 @@ class QtWebsocket(QtCore.QThread):
                         for ignore_item in [
                             #"Error",
                             "!! Printer is not ready",
-                            "!! Move out of range:"#,
+                            "!! Move out of range:",
+                            "!! Shutdown due to M112"
                             # "ok",
                             # "B:",
                             # "N",
