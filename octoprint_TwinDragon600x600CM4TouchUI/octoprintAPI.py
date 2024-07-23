@@ -642,14 +642,14 @@ class octoprintAPI:
 
 
     def isFailureDetected(self):
-        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/isFailureDetected'
+        url = 'http://' + self.ip + '/plugin/TwinDragonPrintRestore/isFailureDetected'
         headers = {'X-Api-Key': self.apiKey}
         response = requests.get(url, headers=headers)
         temp = response.json()
         return temp
 
     def restore(self, restore = False):
-        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/restore'
+        url = 'http://' + self.ip + '/plugin/TwinDragonPrintRestore/restore'
         headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
         payload = {'restore': restore}
         response = requests.post(url, data=json.dumps(payload), headers=headers)
@@ -657,14 +657,14 @@ class octoprintAPI:
         return temp
 
     def getPrintRestoreSettings(self):
-        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/getSettings'
+        url = 'http://' + self.ip + '/plugin/TwinDragonPrintRestore/getSettings'
         headers = {'X-Api-Key': self.apiKey}
         response = requests.get(url, headers=headers)
         temp = response.json()
         return temp
 
     def savePrintRestoreSettigns(self, restore = False, enabled = True, interval = 1):
-        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/saveSettings'
+        url = 'http://' + self.ip + '/plugin/TwinDragonPrintRestore/saveSettings'
         headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
         payload = {'restore': restore, "interval" : interval, "enabled": enabled}
         requests.post(url, data=json.dumps(payload), headers=headers)

@@ -289,6 +289,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.setNewToolZOffsetFromCurrentZBool = False
             self.setActiveExtruder(0)
             self.loadFlag = None
+            self.dialogShown = False
 
             self.dialog_doorlock = None
             self.dialog_filamentsensor = None
@@ -790,12 +791,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.printRestoreMessageBox: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.printRestoreMessageBox: {}".format(e), overlay=True)
 
+
     def onServerConnected(self):
         """
         When the server is connected, check for filament sensor and previous print failure to complere
         """
         logger.info("MainUiClass.onServerConnected started")
         try:
+            octopiclient.gcode(command='status') #get klipper status. hanle in
             self.isFilamentSensorInstalled()
             try:
                 response = octopiclient.isFailureDetected()
@@ -1720,6 +1723,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             time.sleep(1)
             if self.printerStatusText not in ["Printing","Paused"]:
                 octopiclient.gcode("G28")
+            self.selectToolChangeFilament()
 
             self.stackedWidget.setCurrentWidget(self.changeFilamentPage)
             self.changeFilamentComboBox.clear()
@@ -2431,7 +2435,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.showPrinterError started")
         try:
             if any(error in msg for error in
-                   ["Must home axis first", "probe", "Error during homing move", "still triggered after retract", "'mcu' must be specified"]):
+                   ["Can not update MCU","Error loading template", "Must home axis first", "probe", "Error during homing move", "still triggered after retract", "'mcu' must be specified"]):
                 logger.error("CRITICAL ERROR SHUTDOWN NEEDED")
                 if self.printerStatusText in ["Starting","Printing","Paused"]:
                     octopiclient.cancelPrint()
@@ -2442,12 +2446,25 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                         octopiclient.connectPrinter(port="VIRTUAL", baudrate=115200)
                     octopiclient.gcode(command='FIRMWARE_RESTART')
                     octopiclient.gcode(command='RESTART')
-                    dialog.WarningOk(self, msg + ", Cancelling Print.", overlay=overlay)
+                    if not self.dialogShown:
+                        self.dialogShown = True
+                        if dialog.WarningOk(self, msg + ", Cancelling Print.", overlay=overlay):
+                            self.dialogShown = False
                     logger.error("CRITICAL ERROR SHUTDOWN DONE")
                 else:
-                    dialog.WarningOk(self, msg, overlay=overlay)
+                    if not self.dialogShown:
+                        self.dialogShown = True
+                        octopiclient.gcode(command='FIRMWARE_RESTART')
+                        octopiclient.gcode(command='RESTART')
+                        if dialog.WarningOk(self, msg, overlay=overlay):
+                            self.dialogShown = False
+
             else:
-                dialog.WarningOk(self, msg, overlay=overlay)
+                if not self.dialogShown:
+                    self.dialogShown = True
+                    if dialog.WarningOk(self, msg, overlay=overlay):
+                        self.dialogShown = False
+
         except Exception as e:
             logger.error("Error in MainUiClass.showPrinterError: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.showPrinterError: {}".format(e), overlay=True)
@@ -3020,10 +3037,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 os.system('sudo cp -f firmware/PRINTERS_TWINDRAGON_600x600.cfg /home/pi/PRINTERS_TWINDRAGON_600x600.cfg')
                 os.system('sudo cp -f firmware/TOOLHEADS_TD-01_TOOLHEAD0.cfg /home/pi/TOOLHEADS_TD-01_TOOLHEAD0.cfg')
                 os.system('sudo cp -f firmware/TOOLHEADS_TD-01_TOOLHEAD1.cfg /home/pi/TOOLHEADS_TD-01_TOOLHEAD1.cfg')
+                os.system('sudo cp -f firmware/variables.cfg /home/pi/variables.cfg')
                 #TODO: check printer variant setting and modify printer.cfg accordingly
                 octopiclient.gcode(command='M502')
                 octopiclient.gcode(command='M500')
                 octopiclient.gcode(command='FIRMWARE_RESTART')
+                octopiclient.gcode(command='RESTART')
         except Exception as e:
             logger.error("Error in MainUiClass.restorePrintDefaults: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.restorePrintDefaults: {}".format(e), overlay=True)
@@ -3177,23 +3196,8 @@ class QtWebsocket(QtCore.QThread):
     def reestablish_connection(self):
         logger.info("QtWebsocket.reestablish_connection started")
         try:
-            if self.ws is not None:
-                self.ws.close()
-                self.ws = None
-            url = "ws://{}/sockjs/{:0>3d}/{}/websocket".format(
-                ip,  # host + port + prefix, but no protocol
-                random.randrange(0, stop=999),  # server_id
-                uuid.uuid4()  # session_id
-            )
-
-            self.ws = websocket.WebSocketApp(url,
-                                             on_message=self.on_message,
-                                             on_error=self.on_error,
-                                             on_close=self.on_close,
-                                             on_open=self.on_open)
-            self.authenticate()
+            self.__init__()
             self.start()
-            self.authenticate()
         except Exception as e:
             logger.error("Error in QtWebsocket.reestablish_connection: {}".format(e))
     def send(self, data):
