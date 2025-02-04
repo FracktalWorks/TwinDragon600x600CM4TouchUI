@@ -1690,17 +1690,17 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 octopiclient.gcode("G91")
                 octopiclient.gcode("G1 E10 F600")
                 time.sleep(self.calcExtrudeTime(10, 600))
-            octopiclient.gcode("G1 E-20 F2400")
-            time.sleep(self.calcExtrudeTime(20, 2400))
-            time.sleep(10) #wait for filament to cool inside the nozzle
-            octopiclient.gcode("G1 E-150 F2400")
-            time.sleep(self.calcExtrudeTime(150, 2400))
+            octopiclient.gcode("G1 E-25 F6000")
+            time.sleep(self.calcExtrudeTime(20, 6000))
+            time.sleep(8) #wait for filament to cool inside the nozzle
+            octopiclient.gcode("G1 E-150 F5000")
+            time.sleep(self.calcExtrudeTime(150, 5000))
             octopiclient.gcode("G90")
             for i in range(int(ptfeTubeLength/150)):
                 octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E-150 F1500")
+                octopiclient.gcode("G1 E-150 F2000")
                 octopiclient.gcode("G90")
-                time.sleep(self.calcExtrudeTime(150, 1500))
+                time.sleep(self.calcExtrudeTime(150, 2000))
                 if self.stackedWidget.currentWidget() is not self.changeFilamentRetractPage:
                     break
 
