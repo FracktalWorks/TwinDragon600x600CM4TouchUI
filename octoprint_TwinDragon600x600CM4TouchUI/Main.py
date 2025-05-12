@@ -2395,7 +2395,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         except Exception as e:
             error_message = f"Error in inptuShaperCalibrate: {str(e)}"
             logger.error(error_message)
-            dialog.WarningOk(self, error_message, overlay=True)
+            dialog.WarningOk(error_message, overlay=True)
 
     def setZToolOffset(self, offset):
         """
@@ -3150,7 +3150,7 @@ class QtWebsocket(QtCore.QThread):
     connected_signal = QtCore.pyqtSignal()
     filament_sensor_triggered_signal = QtCore.pyqtSignal(str)
     firmware_updater_signal = QtCore.pyqtSignal(dict)
-    set_z_tool_offset_signal = QtCore.pyqtSignal(str,bool)
+    set_z_tool_offset_signal = QtCore.pyqtSignal(str, bool)
     tool_offset_signal = QtCore.pyqtSignal(str)
     active_extruder_signal = QtCore.pyqtSignal(str)
     z_probe_offset_signal = QtCore.pyqtSignal(str)
@@ -3162,6 +3162,11 @@ class QtWebsocket(QtCore.QThread):
         super(QtWebsocket, self).__init__()
         self.ws = None
         self.heartbeat_timer = None
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 5  # Set a limit for reconnection attempts
+        self._initialize_websocket()
+
+    def _initialize_websocket(self):
         try:
             url = "ws://{}/sockjs/{:0>3d}/{}/websocket".format(
                 ip,  # host + port + prefix, but no protocol
@@ -3169,13 +3174,15 @@ class QtWebsocket(QtCore.QThread):
                 uuid.uuid4()  # session_id
             )
 
-            self.ws = websocket.WebSocketApp(url,
-                                             on_message=self.on_message,
-                                             on_error=self.on_error,
-                                             on_close=self.on_close,
-                                             on_open=self.on_open)
+            self.ws = websocket.WebSocketApp(
+                url,
+                on_message=self.on_message,
+                on_error=self.on_error,
+                on_close=self.on_close,
+                on_open=self.on_open
+            )
         except Exception as e:
-            logger.error("Error in QtWebsocket: {}".format(e))
+            logger.error("Error in QtWebsocket._initialize_websocket: {}".format(e))
 
     def run(self):
         logger.info("QtWebsocket.run started")
@@ -3184,6 +3191,7 @@ class QtWebsocket(QtCore.QThread):
             self.reset_heartbeat_timer()
         except Exception as e:
             logger.error("Error in QtWebsocket.run: {}".format(e))
+
     def reset_heartbeat_timer(self):
         try:
             if self.heartbeat_timer is not None:
@@ -3193,13 +3201,21 @@ class QtWebsocket(QtCore.QThread):
             self.heartbeat_timer.start()
         except Exception as e:
             logger.error("Error in QtWebsocket.reset_heartbeat_timer: {}".format(e))
+
     def reestablish_connection(self):
-        logger.info("QtWebsocket.reestablish_connection started")
+        logger.info("Reestablishing WebSocket connection...")
         try:
-            self.__init__()
+            self.reconnect_attempts += 1
+            if self.reconnect_attempts > self.max_reconnect_attempts:
+                logger.error("Max reconnect attempts reached. Giving up.")
+                return
+
+            self._initialize_websocket()
             self.start()
+            logger.info("Reconnection attempt {} succeeded.".format(self.reconnect_attempts))
         except Exception as e:
             logger.error("Error in QtWebsocket.reestablish_connection: {}".format(e))
+
     def send(self, data):
         logger.info("QtWebsocket.send started")
         try:
@@ -3251,14 +3267,16 @@ class QtWebsocket(QtCore.QThread):
         if message_type == "a":
             self.process(data)
 
-    def on_open(self,ws):
+    def on_open(self, ws):
         self.authenticate()
 
     def on_close(self, ws):
-        pass
+        logger.warning("WebSocket connection closed. Attempting to reconnect...")
+        self.reestablish_connection()
 
     def on_error(self, ws, error):
-        logger.error("Error in QtWebsocket: {}".format(error))
+        logger.error("Error in WebSocket connection: {}".format(error))
+        self.reestablish_connection()
 
     @run_async
     def process(self, data):
