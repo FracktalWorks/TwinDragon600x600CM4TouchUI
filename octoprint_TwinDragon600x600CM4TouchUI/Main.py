@@ -3269,6 +3269,8 @@ class QtWebsocket(QtCore.QThread):
 
     def on_open(self, ws):
         self.authenticate()
+        logger.info("WebSocket connection opened")
+        self.reconnect_attempts = 0  # Reset reconnect attempts
 
     def on_close(self, ws):
         logger.warning("WebSocket connection closed. Attempting to reconnect...")
